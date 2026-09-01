@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 from mcp.server.mcpserver import Image, MCPServer   # noqa: E402
 
 from server.tools import (asset_tools, director_tools, learning_tools,   # noqa: E402
-                          sequence_tools, spec_tools)
+                          model_tools, sequence_tools, spec_tools)
 
 server = MCPServer("blendy", instructions=(
     "Blendy: direct 3D animation in Blender by editing a declarative shot spec. "
@@ -36,6 +36,8 @@ SURFACE = {
     sequence_tools: ["read_bible", "write_bible", "read_breakdown", "read_script",
                      ("validate_breakdown", "validate_breakdown_tool"), "write_breakdown",
                      "ingest_list", "read_shot", "validate_continuity", "new_shot_from_breakdown"],
+    model_tools: ["list_models", "new_model", "read_model", ("validate_model", "validate_model_tool"),
+                  "patch_model", "preview_model", "model_profile", "checkpoint_model", "restore_model"],
     director_tools: ["export_proxy", "list_takes", "apply_take", "promote_take", "list_presets",
                      "apply_preset", "promote_preset"],
     learning_tools: ["write_incident", "list_incidents", "triage_incident", "resolve_incident",

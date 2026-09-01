@@ -1,0 +1,633 @@
+{
+  "version": "1.1",
+  "meta": {
+    "name": "haldin_blockout",
+    "fps": 24,
+    "frame_start": 1,
+    "frame_end": 72,
+    "seed": 1
+  },
+  "world": {
+    "hdri": null,
+    "strength": 0.6,
+    "background_color": [
+      0.16,
+      0.16,
+      0.17
+    ]
+  },
+  "assets": [
+    {
+      "id": "ground",
+      "source": "primitive",
+      "ref": "plane",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          4,
+          4,
+          1
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.2,
+            0.19,
+            0.18
+          ],
+          "roughness": 0.9
+        }
+      }
+    },
+    {
+      "id": "haldin_torso",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          1.13
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.22,
+          0.15,
+          0.31
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.08,
+            0.08,
+            0.09
+          ],
+          "metallic": 0.8,
+          "roughness": 0.5
+        }
+      }
+    },
+    {
+      "id": "haldin_leg_l",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.1,
+          0.1,
+          0.42
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.11,
+          0.0,
+          -0.71
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.07,
+            0.06,
+            0.06
+          ],
+          "roughness": 0.85
+        }
+      }
+    },
+    {
+      "id": "haldin_leg_r",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.1,
+          0.1,
+          0.42
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          -0.11,
+          0.0,
+          -0.71
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.07,
+            0.06,
+            0.06
+          ],
+          "roughness": 0.85
+        }
+      }
+    },
+    {
+      "id": "haldin_neck",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.06,
+          0.06,
+          0.06
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.0,
+          0.0,
+          0.34
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.55,
+            0.4,
+            0.32
+          ],
+          "roughness": 0.6
+        }
+      }
+    },
+    {
+      "id": "haldin_head",
+      "source": "primitive",
+      "ref": "uv_sphere",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.125,
+          0.125,
+          0.125
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.0,
+          0.0,
+          0.525
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.55,
+            0.4,
+            0.32
+          ],
+          "roughness": 0.6
+        }
+      }
+    },
+    {
+      "id": "haldin_hair",
+      "source": "primitive",
+      "ref": "uv_sphere",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.13,
+          0.13,
+          0.13
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.0,
+          0.05,
+          0.535
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.75,
+            0.75,
+            0.72
+          ],
+          "roughness": 0.7
+        }
+      }
+    },
+    {
+      "id": "haldin_arm_l",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.06,
+          0.06,
+          0.3
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.29,
+          0.0,
+          -0.02
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.08,
+            0.08,
+            0.09
+          ],
+          "metallic": 0.8,
+          "roughness": 0.5
+        }
+      }
+    },
+    {
+      "id": "haldin_arm_r",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.06,
+          0.06,
+          0.3
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          -0.29,
+          0.0,
+          -0.02
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.08,
+            0.08,
+            0.09
+          ],
+          "metallic": 0.8,
+          "roughness": 0.5
+        }
+      }
+    },
+    {
+      "id": "haldin_pauldron",
+      "source": "primitive",
+      "ref": "cube",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.13,
+          0.11,
+          0.07
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          -0.27,
+          0.0,
+          0.3
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.55,
+            0.35,
+            0.15
+          ],
+          "metallic": 1,
+          "roughness": 0.35
+        }
+      }
+    },
+    {
+      "id": "haldin_cloak",
+      "source": "primitive",
+      "ref": "cube",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.12,
+          0.17,
+          0.34
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.3,
+          0.02,
+          0.02
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.03,
+            0.03,
+            0.035
+          ],
+          "roughness": 0.95
+        }
+      }
+    },
+    {
+      "id": "haldin_sash",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.235,
+          0.165,
+          0.05
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.0,
+          0.0,
+          -0.23
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.25,
+            0.03,
+            0.03
+          ],
+          "roughness": 0.8
+        }
+      }
+    },
+    {
+      "id": "haldin_sword",
+      "source": "primitive",
+      "ref": "cylinder",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.02,
+          0.02,
+          0.5
+        ],
+        "anchor": "@haldin_torso.center",
+        "anchor_offset": [
+          0.16,
+          -0.14,
+          -0.28
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.05,
+            0.05,
+            0.06
+          ],
+          "metallic": 0.6,
+          "roughness": 0.4
+        }
+      }
+    }
+  ],
+  "rigs": [],
+  "animation": [],
+  "cameras": [
+    {
+      "id": "cam_main",
+      "type": "PERSP",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "focal": 35,
+      "dof": null,
+      "track_target": null,
+      "keyframes": [],
+      "move": {
+        "preset": null,
+        "keys": [
+          {
+            "frame": 1,
+            "target": "@haldin_torso.center",
+            "distance": 4.5,
+            "azimuth": 35,
+            "elevation": 8,
+            "focal": 35,
+            "interpolation": "BEZIER",
+            "ease": "AUTO_CLAMPED"
+          },
+          {
+            "frame": 72,
+            "target": "@haldin_head.center",
+            "distance": 1.6,
+            "azimuth": 35,
+            "elevation": 5,
+            "focal": 85,
+            "interpolation": "BEZIER",
+            "ease": "AUTO_CLAMPED"
+          }
+        ]
+      }
+    }
+  ],
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "transform": {
+        "location": [
+          -2.2,
+          -2,
+          2.8
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "energy": 350,
+      "color": [
+        1,
+        0.82,
+        0.62
+      ],
+      "size": 1.5,
+      "track_target": "@haldin_torso.center"
+    },
+    {
+      "id": "rim",
+      "type": "AREA",
+      "transform": {
+        "location": [
+          1.8,
+          2.4,
+          2.4
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "energy": 300,
+      "color": [
+        0.5,
+        0.68,
+        1
+      ],
+      "size": 1,
+      "track_target": "@haldin_torso.center"
+    }
+  ],
+  "render": {
+    "engine": "BLENDER_EEVEE",
+    "samples": 32,
+    "resolution": [
+      1280,
+      720
+    ],
+    "output": "renders/haldin_blockout",
+    "camera": "cam_main",
+    "film_transparent": false
+  }
+}

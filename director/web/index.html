@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blendy Studio</title>
+<link rel="stylesheet" href="studio.css">
+</head>
+<body>
+<header>
+  <strong>Blendy Studio</strong>
+  <select id="shotSelect" title="working shot"></select>
+  <span id="shotState" class="muted"></span>
+  <span class="grow"></span>
+  <span id="claudeStatus" class="muted">claude: …</span>
+  <button id="resetChat" class="ghost" title="start a new conversation">new conversation</button>
+</header>
+
+<main>
+  <section id="chat">
+    <div id="messages"></div>
+    <div id="quick">
+      <button data-q="Open {shot} and give me a blocking pass: place the location and cast at the bible marks, then preview.">block</button>
+      <button data-q="Animation pass on {shot}: choose clips from list_clips, sequence them on the NLA, preview first/middle/last frame.">animate</button>
+      <button data-q="Camera pass on {shot}: if there are takes, apply the latest; otherwise use a camera preset or author a landmark move. Preview.">camera</button>
+      <button data-q="Lighting pass on {shot} within the look's lighting preset. Lookdev preview.">light</button>
+      <button data-q="Review {shot}: look at the latest previews against the breakdown beat and write incidents for anything wrong. Do not fix.">review</button>
+    </div>
+    <form id="composer">
+      <textarea id="input" rows="3" placeholder="Talk to the pipeline. Shift+Enter for a newline."></textarea>
+      <div class="row">
+        <span id="turnStatus" class="muted"></span>
+        <span class="grow"></span>
+        <button type="button" id="stop" class="ghost" hidden>stop</button>
+        <button type="submit" id="send">send</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="center">
+    <nav id="tabs">
+      <button data-tab="previews" class="active">previews</button>
+      <button data-tab="director">director</button>
+      <button data-tab="renders">renders</button>
+    </nav>
+    <div id="tab-previews" class="tab active">
+      <div class="toolbar">
+        <button data-action="render_preview" data-args='{"quality":"fast"}'>preview · fast</button>
+        <button data-action="render_preview" data-args='{"quality":"lookdev"}'>preview · lookdev</button>
+        <button data-action="validate">validate</button>
+        <span class="grow"></span>
+        <span id="actionStatus" class="muted"></span>
+      </div>
+      <div id="latest" class="latest"></div>
+      <div id="history" class="history"></div>
+    </div>
+    <div id="tab-director" class="tab">
+      <div class="toolbar">
+        <button data-action="export_proxy">export proxy</button>
+        <span id="directorStatus" class="muted"></span>
+      </div>
+      <div id="director-view"></div>
+      <div id="frame"></div>
+    </div>
+    <div id="tab-renders" class="tab">
+      <div class="toolbar"><span id="renderSummary" class="muted"></span></div>
+      <div id="renderFrames" class="history"></div>
+    </div>
+  </section>
+
+  <aside id="panel"></aside>
+</main>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module" src="studio.js"></script>
+</body>
+</html>

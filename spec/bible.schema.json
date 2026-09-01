@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blendy.local/spec/bible.schema.json",
+  "title": "Blendy Sequence Bible",
+  "description": "Single source of truth for anything that must be consistent across shots. Human-approved. Shots reference entries by id and may not override them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "title", "cast", "locations", "looks", "style"],
+  "properties": {
+    "version": {"const": "1.0"},
+    "title": {"type": "string", "minLength": 1},
+    "script": {"type": "string", "description": "Path to the source script, relative to repo root."},
+    "cast": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "asset", "costume_variant", "scale_reference", "skeleton", "retarget_profile"],
+        "properties": {
+          "id": {"$ref": "#/$defs/id"},
+          "name": {"type": "string", "description": "Name as it appears in the script."},
+          "aliases": {"type": "array", "items": {"type": "string"}},
+          "asset": {"$ref": "#/$defs/asset_ref"},
+          "costume_variant": {"type": "string", "minLength": 1},
+          "scale_reference": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Height in meters. Shot validation checks the compiled character matches."
+          },
+          "skeleton": {"type": "string", "minLength": 1},
+          "retarget_profile": {"type": "string", "minLength": 1},
+          "voice": {"type": ["string", "null"], "description": "TTS voice id or null for recorded dialogue."}
+        }
+      }
+    },
+    "locations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "assets", "layout_preset", "ground_plane"],
+        "properties": {
+          "id": {"$ref": "#/$defs/id"},
+          "name": {"type": "string"},
+          "aliases": {"type": "array", "items": {"type": "string"}},
+          "assets": {"type": "array", "items": {"$ref": "#/$defs/asset_ref"}},
+          "layout_preset": {"type": ["string", "null"], "description": "profiles/presets/layout/<name>.json"},
+          "ground_plane": {"type": "number", "description": "World Z of the floor."},
+          "blocking_marks": {
+            "type": "object",
+            "description": "Named positions on the floor characters can enter/exit at.",
+            "additionalProperties": {"$ref": "#/$defs/vec3"}
+          }
+        }
+      }
+    },
+    "looks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "location_id", "time_of_day", "lighting_preset", "key_direction", "color_grade"],
+        "properties": {
+          "id": {"$ref": "#/$defs/id"},
+          "location_id": {"$ref": "#/$defs/id"},
+          "time_of_day": {
+            "enum": ["dawn", "morning", "midday", "afternoon", "golden", "dusk", "night", "interior"]
+          },
+          "lighting_preset": {"type": "string", "minLength": 1, "description": "profiles/presets/lighting/<name>.json"},
+          "key_direction": {"type": "number", "description": "Degrees around Z the key light comes from, 0 = +Y."},
+          "color_grade": {"type": "string", "minLength": 1},
+          "hdri": {"oneOf": [{"$ref": "#/$defs/asset_ref"}, {"type": "null"}]}
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fps", "resolution", "render_engine", "lens_set", "aspect"],
+      "properties": {
+        "fps": {"type": "number", "exclusiveMinimum": 0},
+        "resolution": {
+          "type": "array",
+          "items": {"type": "integer", "exclusiveMinimum": 0},
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "render_engine": {"enum": ["BLENDER_EEVEE", "CYCLES"]},
+        "lens_set": {
+          "type": "array",
+          "items": {"type": "number", "exclusiveMinimum": 0},
+          "minItems": 1,
+          "description": "Allowed focal lengths in mm. No continuous zoom."
+        },
+        "aspect": {"type": "number", "exclusiveMinimum": 0},
+        "samples": {"type": "integer", "exclusiveMinimum": 0},
+        "sensor_width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "mm, default 36. Director-mode FOV conversion depends on it."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "maxLength": 64},
+    "vec3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+    "asset_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "ref"],
+      "properties": {
+        "source": {"enum": ["polyhaven", "sketchfab", "meshy", "tripo", "local", "primitive"]},
+        "ref": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

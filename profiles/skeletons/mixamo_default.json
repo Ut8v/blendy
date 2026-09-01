@@ -1,0 +1,39 @@
+{
+  "profile_version": 1,
+  "skeleton": "mixamo",
+  "description": "Mixamo auto-rigger skeleton. Solve once; every Mixamo character inherits it.",
+  "import": {
+    "scale": 0.01,
+    "note": "Mixamo FBX is centimetres, Y-up. The FBX importer handles the axis; scale is applied at ingest."
+  },
+  "prefix": "mixamorig:",
+  "root_bone": "mixamorig:Hips",
+  "bone_map": {},
+  "rest_correction": {},
+  "landmarks": {
+    "eye_L":          { "kind": "bone", "bone": "mixamorig:LeftEye",  "end": "head",
+                        "fallback": { "bone": "mixamorig:Head", "end": "head", "offset_frac": [-0.032, 0.5, 0.09] } },
+    "eye_R":          { "kind": "bone", "bone": "mixamorig:RightEye", "end": "head",
+                        "fallback": { "bone": "mixamorig:Head", "end": "head", "offset_frac": [0.032, 0.5, 0.09] } },
+    "eye_midpoint":   { "kind": "bone", "bone": "mixamorig:Head", "end": "head", "offset_frac": [0.0, 0.5, 0.09] },
+    "ear_L":          { "kind": "bone", "bone": "mixamorig:Head", "end": "head", "offset_frac": [-0.075, 0.45, 0.0] },
+    "ear_R":          { "kind": "bone", "bone": "mixamorig:Head", "end": "head", "offset_frac": [0.075, 0.45, 0.0] },
+    "head_top":       { "kind": "bone", "bone": "mixamorig:HeadTop_End", "end": "head" },
+    "chin":           { "kind": "bone", "bone": "mixamorig:Head", "end": "head", "offset_frac": [0.0, 0.05, 0.08] },
+    "neck":           { "kind": "bone", "bone": "mixamorig:Neck", "end": "head" },
+    "shoulder_L":     { "kind": "bone", "bone": "mixamorig:LeftArm", "end": "head" },
+    "shoulder_R":     { "kind": "bone", "bone": "mixamorig:RightArm", "end": "head" },
+    "hand_L":         { "kind": "bone", "bone": "mixamorig:LeftHand", "end": "head" },
+    "hand_R":         { "kind": "bone", "bone": "mixamorig:RightHand", "end": "head" },
+    "chest":          { "kind": "bone", "bone": "mixamorig:Spine2", "end": "head" },
+    "hip":            { "kind": "bone", "bone": "mixamorig:Hips", "end": "head" },
+    "foot_L":         { "kind": "bone", "bone": "mixamorig:LeftFoot", "end": "head" },
+    "foot_R":         { "kind": "bone", "bone": "mixamorig:RightFoot", "end": "head" },
+    "ground_contact": { "kind": "bone", "bone": "mixamorig:Hips", "end": "head", "project_to_ground": true }
+  },
+  "visemes": {
+    "note": "Rhubarb mouth shapes A-H, X -> shape key names. Filled per character at ingest if the mesh has them.",
+    "A": "viseme_PP", "B": "viseme_kk", "C": "viseme_E", "D": "viseme_aa",
+    "E": "viseme_O", "F": "viseme_U", "G": "viseme_FF", "H": "viseme_nn", "X": null
+  }
+}

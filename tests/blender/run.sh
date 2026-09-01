@@ -3,4 +3,4 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 BLENDER="${BLENDER:-/Applications/Blender.app/Contents/MacOS/Blender}"
-exec "$BLENDER" -b --factory-startup --python "$HERE/test_compiler.py" -- "$@"
+for f in test_compiler.py test_model.py; do "$BLENDER" -b --factory-startup --python "$HERE/$f" -- "$@" || exit 1; done

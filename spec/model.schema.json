@@ -1,0 +1,346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blendy.local/spec/model.schema.json",
+  "title": "Blendy Model Recipe",
+  "description": "A character, prop or set built from declarative parts. The modeling agent edits this and looks at the turntable; the compiler owns every builder.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "id", "kind", "parts", "materials", "landmarks", "skeleton"],
+  "properties": {
+    "version": {"const": "1.0"},
+    "id": {"$ref": "#/$defs/id"},
+    "kind": {"enum": ["character", "prop", "set"]},
+    "description": {"type": "string"},
+    "reference": {"type": ["string", "null"], "description": "Reference image path, shown beside the turntable."},
+    "height": {
+      "type": ["number", "null"],
+      "exclusiveMinimum": 0,
+      "description": "Intended height in metres. The profile records the measured height; the validator flags drift."
+    },
+    "parts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/part"}},
+    "materials": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/material"}
+    },
+    "landmarks": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"},
+      "additionalProperties": {"$ref": "#/$defs/landmark"}
+    },
+    "skeleton": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/skeleton"}]}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "maxLength": 64},
+    "vec3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+    "vec2": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+    "rgb": {"type": "array", "items": {"type": "number", "minimum": 0}, "minItems": 3, "maxItems": 3},
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["location", "rotation_euler", "scale"],
+      "properties": {
+        "location": {"$ref": "#/$defs/vec3"},
+        "rotation_euler": {"$ref": "#/$defs/vec3"},
+        "scale": {"$ref": "#/$defs/vec3"}
+      },
+      "description": "Relative to the parent part, metres and radians."
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "op", "params", "transform", "parent", "material", "modifiers"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "op": {"enum": ["primitive", "skin", "revolve", "extrude", "tube", "metaball", "hair"]},
+        "params": {"type": "object"},
+        "transform": {"$ref": "#/$defs/transform"},
+        "parent": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "material": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "modifiers": {"type": "array", "items": {"$ref": "#/$defs/modifier"}},
+        "smooth": {"type": "boolean", "description": "Smooth shading (default true for organic ops)."},
+        "mirror_of": {
+          "oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}],
+          "description": "Build as the X-mirror of another part instead of from params."
+        }
+      }
+    },
+    "primitive_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shape", "size"],
+      "properties": {
+        "shape": {"enum": ["cube", "sphere", "cylinder", "cone", "torus", "plane"]},
+        "size": {
+          "$ref": "#/$defs/vec3",
+          "description": "Full dimensions in metres (torus: [major diameter, major diameter, minor diameter])."
+        },
+        "segments": {"type": "integer", "minimum": 3, "maximum": 128}
+      }
+    },
+    "skin_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["joints", "edges"],
+      "properties": {
+        "joints": {
+          "type": "object",
+          "minProperties": 2,
+          "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["position", "radius"],
+            "properties": {
+              "position": {"$ref": "#/$defs/vec3"},
+              "radius": {
+                "oneOf": [{"type": "number", "exclusiveMinimum": 0}, {"$ref": "#/$defs/vec2"}],
+                "description": "Metres; [rx, ry] for an oval cross-section."
+              },
+              "loose": {"type": "boolean", "description": "Sharp end cap instead of a rounded one."}
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "array", "items": {"type": "string"}, "minItems": 2, "maxItems": 2}
+        },
+        "root": {"type": "string"},
+        "subdivision": {"type": "integer", "minimum": 0, "maximum": 3},
+        "smooth_shading": {"type": "boolean"}
+      }
+    },
+    "revolve_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile"],
+      "properties": {
+        "profile": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/vec2"},
+          "description": "[radius, z] pairs from bottom to top."
+        },
+        "segments": {"type": "integer", "minimum": 3, "maximum": 128},
+        "cap": {"type": "boolean"}
+      }
+    },
+    "extrude_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outline", "depth"],
+      "properties": {
+        "outline": {
+          "type": "array",
+          "minItems": 3,
+          "items": {"$ref": "#/$defs/vec2"},
+          "description": "XY polygon, counter-clockwise."
+        },
+        "depth": {"type": "number", "exclusiveMinimum": 0},
+        "taper": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Scale of the top face relative to the bottom."
+        }
+      }
+    },
+    "tube_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["points", "radius"],
+      "properties": {
+        "points": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/vec3"}},
+        "radius": {
+          "oneOf": [
+            {"type": "number", "exclusiveMinimum": 0},
+            {"type": "array", "items": {"type": "number", "exclusiveMinimum": 0}}
+          ]
+        },
+        "segments": {"type": "integer", "minimum": 3, "maximum": 64},
+        "bezier": {"type": "boolean", "description": "Smooth curve through the points instead of a polyline."},
+        "resolution": {"type": "integer", "minimum": 1, "maximum": 32},
+        "caps": {"type": "boolean"}
+      }
+    },
+    "metaball_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["blobs"],
+      "properties": {
+        "blobs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["position", "radius"],
+            "properties": {
+              "position": {"$ref": "#/$defs/vec3"},
+              "radius": {"type": "number", "exclusiveMinimum": 0},
+              "shape": {"enum": ["ball", "ellipsoid", "capsule"]},
+              "size": {"$ref": "#/$defs/vec3"},
+              "negative": {"type": "boolean"}
+            }
+          }
+        },
+        "resolution": {"type": "number", "exclusiveMinimum": 0},
+        "threshold": {"type": "number", "exclusiveMinimum": 0}
+      }
+    },
+    "hair_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "length"],
+      "properties": {
+        "count": {"type": "integer", "minimum": 1, "maximum": 20000},
+        "length": {"type": "number", "exclusiveMinimum": 0},
+        "radius": {"type": "number", "exclusiveMinimum": 0},
+        "clump": {"type": "number", "minimum": 0, "maximum": 1},
+        "gravity": {"type": "number", "minimum": 0, "maximum": 1},
+        "curl": {"type": "number", "minimum": 0},
+        "region": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {"axis": {"enum": ["x", "y", "z"]}, "min": {"type": "number"}, "max": {"type": "number"}},
+          "description": "Grow only where the emitter's local coordinate on axis is within [min, max]."
+        },
+        "seed": {"type": "integer"}
+      }
+    },
+    "modifier": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": [
+            "subdivision",
+            "bevel",
+            "mirror",
+            "solidify",
+            "boolean",
+            "displace",
+            "array",
+            "shrinkwrap",
+            "smooth",
+            "cloth",
+            "decimate"
+          ]
+        },
+        "levels": {"type": "integer", "minimum": 0, "maximum": 4},
+        "width": {"type": "number", "minimum": 0},
+        "segments": {"type": "integer", "minimum": 1, "maximum": 16},
+        "angle": {"type": "number"},
+        "axis": {"enum": ["x", "y", "z"]},
+        "merge": {"type": "boolean"},
+        "thickness": {"type": "number"},
+        "offset": {"oneOf": [{"type": "number"}, {"$ref": "#/$defs/vec3"}]},
+        "operation": {"enum": ["union", "difference", "intersect"]},
+        "part": {"$ref": "#/$defs/id"},
+        "strength": {"type": "number"},
+        "scale": {"type": "number", "exclusiveMinimum": 0},
+        "detail": {"type": "number", "minimum": 0, "maximum": 16},
+        "count": {"type": "integer", "minimum": 1, "maximum": 200},
+        "factor": {"type": "number"},
+        "iterations": {"type": "integer", "minimum": 1, "maximum": 200},
+        "pin": {"enum": ["top", "bottom", "left", "right", "front", "back"]},
+        "frame": {"type": "integer", "minimum": 1},
+        "stiffness": {"type": "number", "minimum": 0},
+        "ratio": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "material": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base_color": {"$ref": "#/$defs/rgb"},
+        "roughness": {"type": "number", "minimum": 0, "maximum": 1},
+        "metallic": {"type": "number", "minimum": 0, "maximum": 1},
+        "specular": {"type": "number", "minimum": 0, "maximum": 1},
+        "subsurface": {"type": "number", "minimum": 0, "maximum": 1},
+        "subsurface_color": {"$ref": "#/$defs/rgb"},
+        "sheen": {"type": "number", "minimum": 0, "maximum": 1},
+        "emission": {"$ref": "#/$defs/rgb"},
+        "emission_strength": {"type": "number", "minimum": 0},
+        "noise": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["scale", "strength"],
+          "properties": {
+            "scale": {"type": "number", "exclusiveMinimum": 0},
+            "strength": {"type": "number", "minimum": 0, "maximum": 1},
+            "color": {"$ref": "#/$defs/rgb"},
+            "detail": {"type": "number", "minimum": 0, "maximum": 16}
+          },
+          "description": "Second color blended in by a noise field."
+        },
+        "grunge": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["strength"],
+          "properties": {
+            "strength": {"type": "number", "minimum": 0, "maximum": 1},
+            "scale": {"type": "number", "exclusiveMinimum": 0}
+          },
+          "description": "Darkens and roughens in noise pockets: dirt, wear."
+        },
+        "scratches": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["strength"],
+          "properties": {
+            "strength": {"type": "number", "minimum": 0, "maximum": 1},
+            "scale": {"type": "number", "exclusiveMinimum": 0}
+          }
+        },
+        "bump": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["strength"],
+          "properties": {
+            "strength": {"type": "number", "minimum": 0, "maximum": 2},
+            "scale": {"type": "number", "exclusiveMinimum": 0},
+            "detail": {"type": "number", "minimum": 0, "maximum": 16}
+          }
+        }
+      }
+    },
+    "landmark": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["part", "anchor"],
+          "properties": {
+            "part": {"$ref": "#/$defs/id"},
+            "anchor": {
+              "type": "string",
+              "pattern": "^(center|origin|top|bottom|front|back|left|right|joint:[a-z][a-z0-9_]*)$"
+            },
+            "offset": {"$ref": "#/$defs/vec3"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["position"],
+          "properties": {"position": {"$ref": "#/$defs/vec3"}, "normal": {"$ref": "#/$defs/vec3"}}
+        }
+      ]
+    },
+    "skeleton": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {"const": "rigify_human"},
+        "bones": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/vec3"},
+          "description": "Metarig bone head positions by landmark name or explicit vec3. Filled in at the rigging milestone."
+        }
+      }
+    }
+  }
+}

@@ -158,6 +158,14 @@ def build_asset(ctx, asset: dict[str, Any]) -> bpy.types.Object:
         root = make_primitive(aid, asset["ref"])
         objects = [root]
         ctx.link(root, "Assets")
+    elif asset["source"] == "model":
+        from ..modeling.build_model import instantiate, model_path
+        from ..validate import load_json
+        path = model_path(asset["ref"])
+        if not path.exists():
+            raise RuntimeError(f"model '{asset['ref']}' has no recipe at {path}")
+        root, parts = instantiate(load_json(path), aid, lambda o: ctx.link(o, "Assets"))
+        objects = [root, *parts.values()]
     else:
         path = resolved.get("path")
         if not path and asset["source"] == "local":

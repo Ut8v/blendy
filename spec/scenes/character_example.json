@@ -1,0 +1,121 @@
+{
+  "version": "1.1",
+  "meta": {
+    "name": "character_example",
+    "fps": 24,
+    "frame_start": 1,
+    "frame_end": 120,
+    "seed": 7
+  },
+  "world": {
+    "hdri": { "source": "polyhaven", "ref": "studio_small_09" },
+    "strength": 0.8,
+    "background_color": [0.0, 0.0, 0.0]
+  },
+  "assets": [
+    {
+      "id": "stage_floor",
+      "source": "polyhaven",
+      "ref": "wood_floor_deck",
+      "transform": {
+        "location": [0.0, 0.0, 0.0],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [20.0, 20.0, 1.0]
+      }
+    },
+    {
+      "id": "walker_mesh",
+      "source": "local",
+      "ref": "characters/walker.fbx",
+      "transform": {
+        "location": [0.0, 0.0, 0.0],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      }
+    }
+  ],
+  "rigs": [
+    {
+      "id": "walker",
+      "asset_id": "walker_mesh",
+      "skeleton": "mixamo",
+      "retarget_profile": "mixamo_default"
+    }
+  ],
+  "animation": [
+    {
+      "id": "walk_in",
+      "rig_id": "walker",
+      "clip": "mixamo/walking_forward",
+      "frame_start": 1,
+      "blend_in": 0,
+      "blend_out": 8,
+      "loop": true
+    },
+    {
+      "id": "turn_and_wave",
+      "rig_id": "walker",
+      "clip": "mixamo/waving",
+      "frame_start": 72,
+      "blend_in": 8,
+      "blend_out": 12,
+      "loop": false
+    }
+  ],
+  "cameras": [
+    {
+      "id": "cam_main",
+      "type": "PERSP",
+      "transform": {
+        "location": [6.0, -6.5, 1.7],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      },
+      "focal": 85.0,
+      "dof": { "focus_distance": 8.8, "f_stop": 2.0, "focus_target": "walker_mesh" },
+      "track_target": "walker_mesh",
+      "keyframes": [
+        { "channel": "focal", "frame": 1,   "value": 85.0, "interpolation": "BEZIER" },
+        { "channel": "focal", "frame": 120, "value": 55.0, "interpolation": "BEZIER" }
+      ]
+    }
+  ],
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "transform": {
+        "location": [3.5, -4.0, 5.0],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      },
+      "energy": 750.0,
+      "color": [1.0, 0.95, 0.88],
+      "size": 2.5,
+      "track_target": "walker_mesh"
+    },
+    {
+      "id": "rim",
+      "type": "SPOT",
+      "transform": {
+        "location": [-4.0, 5.0, 4.0],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      },
+      "energy": 400.0,
+      "color": [0.7, 0.8, 1.0],
+      "size": 0.1,
+      "spot_size": 0.9,
+      "spot_blend": 0.35,
+      "track_target": "walker_mesh"
+    }
+  ],
+  "render": {
+    "engine": "BLENDER_EEVEE",
+    "samples": 32,
+    "resolution": [1280, 720],
+    "output": "preview/character_example",
+    "camera": "cam_main",
+    "film_transparent": false
+  }
+}

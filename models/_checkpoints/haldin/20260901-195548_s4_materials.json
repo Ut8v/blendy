@@ -997,18 +997,18 @@
       "id": "katana",
       "op": "tube",
       "parent": "body",
-      "material": "lacquer",
+      "material": "dark_steel",
       "modifiers": [],
       "transform": {
         "location": [
-          0.22,
-          -0.1,
+          0.19,
+          0.06,
           1.02
         ],
         "rotation_euler": [
-          1,
+          0.35,
           0,
-          0.24
+          -0.15
         ],
         "scale": [
           1,
@@ -1021,27 +1021,26 @@
           [
             0,
             0,
-            -0.02
+            0.18
           ],
           [
             0,
             0,
-            -0.5
+            0.0
           ],
           [
             0,
-            0,
-            -0.78
+            -0.05,
+            -0.55
           ]
         ],
         "radius": [
+          0.016,
           0.02,
-          0.018,
           0.012
         ],
         "bezier": false,
-        "segments": 12,
-        "caps": true
+        "segments": 12
       }
     },
     {
@@ -1070,24 +1069,23 @@
       "params": {
         "profile": [
           [
-            0,
-            -0.005
+            0.0,
+            -0.006
           ],
           [
-            0.042,
-            -0.005
+            0.045,
+            -0.006
           ],
           [
-            0.042,
-            0.005
+            0.045,
+            0.006
           ],
           [
-            0,
-            0.005
+            0.0,
+            0.006
           ]
         ],
-        "segments": 32,
-        "cap": true
+        "segments": 24
       }
     },
     {
@@ -2221,147 +2219,6 @@
         "segments": 6,
         "caps": true
       }
-    },
-    {
-      "id": "hilt",
-      "op": "tube",
-      "parent": "katana",
-      "material": "wrap",
-      "modifiers": [],
-      "transform": {
-        "location": [
-          0,
-          0,
-          0
-        ],
-        "rotation_euler": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "params": {
-        "points": [
-          [
-            0,
-            0,
-            0.01
-          ],
-          [
-            0,
-            0,
-            0.27
-          ]
-        ],
-        "radius": [
-          0.017,
-          0.015
-        ],
-        "bezier": false,
-        "segments": 12,
-        "caps": true
-      }
-    },
-    {
-      "id": "fuchi",
-      "op": "revolve",
-      "parent": "katana",
-      "material": "bronze",
-      "modifiers": [],
-      "transform": {
-        "location": [
-          0,
-          0,
-          0
-        ],
-        "rotation_euler": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "params": {
-        "profile": [
-          [
-            0.014,
-            0.008
-          ],
-          [
-            0.019,
-            0.008
-          ],
-          [
-            0.019,
-            0.022
-          ],
-          [
-            0.014,
-            0.022
-          ]
-        ],
-        "segments": 24,
-        "cap": true
-      }
-    },
-    {
-      "id": "pommel",
-      "op": "revolve",
-      "parent": "katana",
-      "material": "dark_steel",
-      "modifiers": [],
-      "transform": {
-        "location": [
-          0,
-          0,
-          0
-        ],
-        "rotation_euler": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "params": {
-        "profile": [
-          [
-            0.012,
-            0.268
-          ],
-          [
-            0.019,
-            0.274
-          ],
-          [
-            0.019,
-            0.29
-          ],
-          [
-            0.011,
-            0.297
-          ],
-          [
-            0,
-            0.297
-          ]
-        ],
-        "segments": 24,
-        "cap": true
-      }
     }
   ],
   "materials": {
@@ -2442,8 +2299,8 @@
         "scale": 12
       },
       "scratches": {
-        "strength": 0.12,
-        "scale": 80
+        "strength": 0.35,
+        "scale": 40
       },
       "bump": {
         "strength": 0.5,
@@ -2572,41 +2429,6 @@
         0.1
       ],
       "roughness": 0.6
-    },
-    "lacquer": {
-      "base_color": [
-        0.03,
-        0.03,
-        0.035
-      ],
-      "roughness": 0.3,
-      "specular": 0.6,
-      "grunge": {
-        "strength": 0.3,
-        "scale": 20
-      }
-    },
-    "wrap": {
-      "base_color": [
-        0.07,
-        0.06,
-        0.06
-      ],
-      "roughness": 0.8,
-      "noise": {
-        "scale": 120,
-        "strength": 0.4,
-        "color": [
-          0.14,
-          0.12,
-          0.11
-        ],
-        "detail": 2
-      },
-      "bump": {
-        "strength": 0.9,
-        "scale": 160
-      }
     }
   },
   "landmarks": {

@@ -997,18 +997,18 @@
       "id": "katana",
       "op": "tube",
       "parent": "body",
-      "material": "lacquer",
+      "material": "dark_steel",
       "modifiers": [],
       "transform": {
         "location": [
-          0.22,
-          -0.1,
+          0.19,
+          0.06,
           1.02
         ],
         "rotation_euler": [
-          1,
+          0.35,
           0,
-          0.24
+          -0.15
         ],
         "scale": [
           1,
@@ -1021,27 +1021,26 @@
           [
             0,
             0,
-            -0.02
+            0.18
           ],
           [
             0,
             0,
-            -0.5
+            0.0
           ],
           [
             0,
-            0,
-            -0.78
+            -0.05,
+            -0.55
           ]
         ],
         "radius": [
+          0.016,
           0.02,
-          0.018,
           0.012
         ],
         "bezier": false,
-        "segments": 12,
-        "caps": true
+        "segments": 12
       }
     },
     {
@@ -1070,24 +1069,23 @@
       "params": {
         "profile": [
           [
-            0,
-            -0.005
+            0.0,
+            -0.006
           ],
           [
-            0.042,
-            -0.005
+            0.045,
+            -0.006
           ],
           [
-            0.042,
-            0.005
+            0.045,
+            0.006
           ],
           [
-            0,
-            0.005
+            0.0,
+            0.006
           ]
         ],
-        "segments": 32,
-        "cap": true
+        "segments": 24
       }
     },
     {
@@ -2221,348 +2219,150 @@
         "segments": 6,
         "caps": true
       }
-    },
-    {
-      "id": "hilt",
-      "op": "tube",
-      "parent": "katana",
-      "material": "wrap",
-      "modifiers": [],
-      "transform": {
-        "location": [
-          0,
-          0,
-          0
-        ],
-        "rotation_euler": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "params": {
-        "points": [
-          [
-            0,
-            0,
-            0.01
-          ],
-          [
-            0,
-            0,
-            0.27
-          ]
-        ],
-        "radius": [
-          0.017,
-          0.015
-        ],
-        "bezier": false,
-        "segments": 12,
-        "caps": true
-      }
-    },
-    {
-      "id": "fuchi",
-      "op": "revolve",
-      "parent": "katana",
-      "material": "bronze",
-      "modifiers": [],
-      "transform": {
-        "location": [
-          0,
-          0,
-          0
-        ],
-        "rotation_euler": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "params": {
-        "profile": [
-          [
-            0.014,
-            0.008
-          ],
-          [
-            0.019,
-            0.008
-          ],
-          [
-            0.019,
-            0.022
-          ],
-          [
-            0.014,
-            0.022
-          ]
-        ],
-        "segments": 24,
-        "cap": true
-      }
-    },
-    {
-      "id": "pommel",
-      "op": "revolve",
-      "parent": "katana",
-      "material": "dark_steel",
-      "modifiers": [],
-      "transform": {
-        "location": [
-          0,
-          0,
-          0
-        ],
-        "rotation_euler": [
-          0,
-          0,
-          0
-        ],
-        "scale": [
-          1,
-          1,
-          1
-        ]
-      },
-      "params": {
-        "profile": [
-          [
-            0.012,
-            0.268
-          ],
-          [
-            0.019,
-            0.274
-          ],
-          [
-            0.019,
-            0.29
-          ],
-          [
-            0.011,
-            0.297
-          ],
-          [
-            0,
-            0.297
-          ]
-        ],
-        "segments": 24,
-        "cap": true
-      }
     }
   ],
   "materials": {
     "skin": {
       "base_color": [
-        0.58,
-        0.4,
-        0.31
+        0.62,
+        0.45,
+        0.36
       ],
-      "roughness": 0.6,
-      "subsurface": 0.2,
-      "noise": {
-        "scale": 25,
-        "strength": 0.2,
-        "color": [
-          0.5,
-          0.3,
-          0.25
-        ],
-        "detail": 3
-      },
+      "roughness": 0.55,
+      "subsurface": 0.15,
       "bump": {
-        "strength": 0.3,
-        "scale": 60
+        "strength": 0.15,
+        "scale": 40
       }
     },
     "eye": {
       "base_color": [
-        0.5,
-        0.58,
-        0.6
+        0.55,
+        0.62,
+        0.65
       ],
-      "roughness": 0.15,
+      "roughness": 0.1,
       "specular": 0.8
     },
     "hair": {
       "base_color": [
-        0.8,
-        0.8,
-        0.78
+        0.85,
+        0.85,
+        0.82
       ],
-      "roughness": 0.7,
+      "roughness": 0.75,
       "noise": {
-        "scale": 80,
-        "strength": 0.35,
+        "scale": 60,
+        "strength": 0.25,
         "color": [
-          0.5,
-          0.5,
-          0.48
-        ],
-        "detail": 4
+          0.55,
+          0.55,
+          0.52
+        ]
       },
       "bump": {
-        "strength": 0.6,
-        "scale": 120
+        "strength": 0.4,
+        "scale": 80
       }
     },
     "dark_steel": {
       "base_color": [
-        0.05,
-        0.045,
-        0.045
+        0.12,
+        0.11,
+        0.11
       ],
-      "metallic": 0.7,
-      "roughness": 0.55,
-      "noise": {
-        "scale": 15,
-        "strength": 0.35,
-        "color": [
-          0.12,
-          0.07,
-          0.05
-        ],
-        "detail": 4
-      },
+      "metallic": 0.85,
+      "roughness": 0.5,
       "grunge": {
-        "strength": 0.6,
-        "scale": 12
+        "strength": 0.5,
+        "scale": 6
       },
       "scratches": {
-        "strength": 0.12,
-        "scale": 80
-      },
-      "bump": {
-        "strength": 0.5,
-        "scale": 25
+        "strength": 0.25
       }
     },
     "bronze": {
       "base_color": [
-        0.6,
-        0.38,
-        0.14
+        0.55,
+        0.36,
+        0.16
       ],
-      "metallic": 1,
-      "roughness": 0.4,
-      "noise": {
-        "scale": 30,
-        "strength": 0.4,
-        "color": [
-          0.25,
-          0.15,
-          0.06
-        ],
-        "detail": 4
-      },
+      "metallic": 0.9,
+      "roughness": 0.45,
       "grunge": {
-        "strength": 0.5,
-        "scale": 20
+        "strength": 0.4
       },
       "bump": {
-        "strength": 0.4,
-        "scale": 40
+        "strength": 0.3,
+        "scale": 30
       }
     },
     "cloak": {
       "base_color": [
-        0.025,
-        0.024,
-        0.026
+        0.07,
+        0.065,
+        0.065
       ],
-      "roughness": 1,
-      "sheen": 0.15,
+      "roughness": 0.95,
+      "sheen": 0.3,
       "noise": {
-        "scale": 10,
-        "strength": 0.25,
-        "color": [
-          0.06,
-          0.055,
-          0.05
-        ],
-        "detail": 3
-      },
-      "grunge": {
+        "scale": 8,
         "strength": 0.3,
-        "scale": 8
-      },
-      "bump": {
-        "strength": 0.6,
-        "scale": 30
+        "color": [
+          0.12,
+          0.11,
+          0.1
+        ]
       }
     },
     "sash": {
       "base_color": [
-        0.3,
-        0.05,
-        0.04
+        0.42,
+        0.06,
+        0.05
       ],
-      "roughness": 0.9,
-      "noise": {
-        "scale": 30,
-        "strength": 0.35,
-        "color": [
-          0.16,
-          0.03,
-          0.03
-        ],
-        "detail": 3
-      },
-      "bump": {
-        "strength": 0.5,
-        "scale": 60
-      }
-    },
-    "leather": {
-      "base_color": [
-        0.14,
-        0.09,
-        0.06
-      ],
-      "roughness": 0.65,
-      "grunge": {
-        "strength": 0.5,
-        "scale": 15
-      },
-      "bump": {
-        "strength": 0.35,
-        "scale": 40
-      }
-    },
-    "dark_cloth": {
-      "base_color": [
-        0.05,
-        0.05,
-        0.06
-      ],
-      "roughness": 0.95,
-      "sheen": 0.1,
+      "roughness": 0.85,
       "noise": {
         "scale": 20,
         "strength": 0.3,
         "color": [
-          0.09,
-          0.08,
-          0.08
-        ],
-        "detail": 3
+          0.25,
+          0.04,
+          0.03
+        ]
+      }
+    },
+    "leather": {
+      "base_color": [
+        0.16,
+        0.12,
+        0.09
+      ],
+      "roughness": 0.7,
+      "grunge": {
+        "strength": 0.4
+      }
+    },
+    "dark_cloth": {
+      "base_color": [
+        0.06,
+        0.06,
+        0.07
+      ],
+      "roughness": 0.9,
+      "sheen": 0.2,
+      "noise": {
+        "scale": 12,
+        "strength": 0.3,
+        "color": [
+          0.1,
+          0.1,
+          0.11
+        ]
       },
       "bump": {
-        "strength": 0.4,
-        "scale": 80
+        "strength": 0.3,
+        "scale": 60
       }
     },
     "scar": {
@@ -2572,41 +2372,6 @@
         0.1
       ],
       "roughness": 0.6
-    },
-    "lacquer": {
-      "base_color": [
-        0.03,
-        0.03,
-        0.035
-      ],
-      "roughness": 0.3,
-      "specular": 0.6,
-      "grunge": {
-        "strength": 0.3,
-        "scale": 20
-      }
-    },
-    "wrap": {
-      "base_color": [
-        0.07,
-        0.06,
-        0.06
-      ],
-      "roughness": 0.8,
-      "noise": {
-        "scale": 120,
-        "strength": 0.4,
-        "color": [
-          0.14,
-          0.12,
-          0.11
-        ],
-        "detail": 2
-      },
-      "bump": {
-        "strength": 0.9,
-        "scale": 160
-      }
     }
   },
   "landmarks": {

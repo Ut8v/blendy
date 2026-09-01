@@ -1,0 +1,1285 @@
+{
+  "version": "1.0",
+  "id": "haldin",
+  "kind": "character",
+  "description": "Old white-haired warrior. Dark riveted armour, bronze dragon pauldron on his right shoulder, ragged near-black cloak over the left, red rope sash, katana at the left hip. Scar over the right brow.",
+  "reference": "assets/references/haldin.png",
+  "height": 1.82,
+  "parts": [
+    {
+      "id": "body",
+      "op": "skin",
+      "parent": null,
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "root": "hip",
+        "subdivision": 2,
+        "joints": {
+          "hip": {
+            "position": [
+              0,
+              0,
+              0.98
+            ],
+            "radius": [
+              0.17,
+              0.12
+            ]
+          },
+          "belly": {
+            "position": [
+              0,
+              -0.01,
+              1.14
+            ],
+            "radius": [
+              0.175,
+              0.135
+            ]
+          },
+          "chest": {
+            "position": [
+              0,
+              -0.02,
+              1.32
+            ],
+            "radius": [
+              0.205,
+              0.14
+            ]
+          },
+          "upper_chest": {
+            "position": [
+              0,
+              -0.015,
+              1.44
+            ],
+            "radius": [
+              0.175,
+              0.125
+            ]
+          },
+          "neck_base": {
+            "position": [
+              0,
+              0,
+              1.52
+            ],
+            "radius": 0.078
+          },
+          "neck": {
+            "position": [
+              0,
+              -0.01,
+              1.585
+            ],
+            "radius": 0.058
+          },
+          "head_base": {
+            "position": [
+              0,
+              -0.03,
+              1.635
+            ],
+            "radius": [
+              0.074,
+              0.088
+            ]
+          },
+          "head": {
+            "position": [
+              0,
+              -0.03,
+              1.7
+            ],
+            "radius": [
+              0.088,
+              0.105
+            ]
+          },
+          "head_top": {
+            "position": [
+              0,
+              -0.025,
+              1.75
+            ],
+            "radius": 0.068
+          },
+          "shoulder_l": {
+            "position": [
+              0.225,
+              0,
+              1.455
+            ],
+            "radius": 0.08
+          },
+          "elbow_l": {
+            "position": [
+              0.29,
+              -0.035,
+              1.2
+            ],
+            "radius": 0.055
+          },
+          "forearm_l": {
+            "position": [
+              0.31,
+              -0.05,
+              1.08
+            ],
+            "radius": 0.06
+          },
+          "wrist_l": {
+            "position": [
+              0.33,
+              -0.08,
+              0.95
+            ],
+            "radius": 0.042
+          },
+          "hand_l": {
+            "position": [
+              0.34,
+              -0.1,
+              0.85
+            ],
+            "radius": [
+              0.05,
+              0.022
+            ]
+          },
+          "shoulder_r": {
+            "position": [
+              -0.225,
+              0,
+              1.455
+            ],
+            "radius": 0.08
+          },
+          "elbow_r": {
+            "position": [
+              -0.29,
+              -0.035,
+              1.2
+            ],
+            "radius": 0.055
+          },
+          "forearm_r": {
+            "position": [
+              -0.31,
+              -0.05,
+              1.08
+            ],
+            "radius": 0.06
+          },
+          "wrist_r": {
+            "position": [
+              -0.33,
+              -0.08,
+              0.95
+            ],
+            "radius": 0.042
+          },
+          "hand_r": {
+            "position": [
+              -0.34,
+              -0.1,
+              0.85
+            ],
+            "radius": [
+              0.05,
+              0.022
+            ]
+          },
+          "thigh_l": {
+            "position": [
+              0.1,
+              0,
+              0.9
+            ],
+            "radius": 0.09
+          },
+          "knee_l": {
+            "position": [
+              0.11,
+              0,
+              0.5
+            ],
+            "radius": 0.065
+          },
+          "ankle_l": {
+            "position": [
+              0.11,
+              0,
+              0.08
+            ],
+            "radius": 0.045
+          },
+          "foot_l": {
+            "position": [
+              0.11,
+              -0.12,
+              0.03
+            ],
+            "radius": [
+              0.05,
+              0.03
+            ]
+          },
+          "thigh_r": {
+            "position": [
+              -0.1,
+              0,
+              0.9
+            ],
+            "radius": 0.09
+          },
+          "knee_r": {
+            "position": [
+              -0.11,
+              0,
+              0.5
+            ],
+            "radius": 0.065
+          },
+          "ankle_r": {
+            "position": [
+              -0.11,
+              0,
+              0.08
+            ],
+            "radius": 0.045
+          },
+          "foot_r": {
+            "position": [
+              -0.11,
+              -0.12,
+              0.03
+            ],
+            "radius": [
+              0.05,
+              0.03
+            ]
+          }
+        },
+        "edges": [
+          [
+            "hip",
+            "belly"
+          ],
+          [
+            "belly",
+            "chest"
+          ],
+          [
+            "chest",
+            "upper_chest"
+          ],
+          [
+            "upper_chest",
+            "neck_base"
+          ],
+          [
+            "neck_base",
+            "neck"
+          ],
+          [
+            "neck",
+            "head_base"
+          ],
+          [
+            "head_base",
+            "head"
+          ],
+          [
+            "head",
+            "head_top"
+          ],
+          [
+            "upper_chest",
+            "shoulder_l"
+          ],
+          [
+            "shoulder_l",
+            "elbow_l"
+          ],
+          [
+            "elbow_l",
+            "forearm_l"
+          ],
+          [
+            "forearm_l",
+            "wrist_l"
+          ],
+          [
+            "wrist_l",
+            "hand_l"
+          ],
+          [
+            "upper_chest",
+            "shoulder_r"
+          ],
+          [
+            "shoulder_r",
+            "elbow_r"
+          ],
+          [
+            "elbow_r",
+            "forearm_r"
+          ],
+          [
+            "forearm_r",
+            "wrist_r"
+          ],
+          [
+            "wrist_r",
+            "hand_r"
+          ],
+          [
+            "hip",
+            "thigh_l"
+          ],
+          [
+            "thigh_l",
+            "knee_l"
+          ],
+          [
+            "knee_l",
+            "ankle_l"
+          ],
+          [
+            "ankle_l",
+            "foot_l"
+          ],
+          [
+            "hip",
+            "thigh_r"
+          ],
+          [
+            "thigh_r",
+            "knee_r"
+          ],
+          [
+            "knee_r",
+            "ankle_r"
+          ],
+          [
+            "ankle_r",
+            "foot_r"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "eye_l",
+      "op": "primitive",
+      "parent": "body",
+      "material": "eye",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0.034,
+          -0.115,
+          1.705
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "shape": "sphere",
+        "size": [
+          0.024,
+          0.024,
+          0.024
+        ],
+        "segments": 16
+      }
+    },
+    {
+      "id": "eye_r",
+      "op": "primitive",
+      "parent": "body",
+      "material": "eye",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          -0.034,
+          -0.115,
+          1.705
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "shape": "sphere",
+        "size": [
+          0.024,
+          0.024,
+          0.024
+        ],
+        "segments": 16
+      }
+    },
+    {
+      "id": "nose",
+      "op": "skin",
+      "parent": "body",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "joints": {
+          "bridge": {
+            "position": [
+              0,
+              -0.125,
+              1.7
+            ],
+            "radius": 0.012
+          },
+          "tip": {
+            "position": [
+              0,
+              -0.15,
+              1.668
+            ],
+            "radius": 0.016
+          }
+        },
+        "edges": [
+          [
+            "bridge",
+            "tip"
+          ]
+        ],
+        "subdivision": 2
+      }
+    },
+    {
+      "id": "hair",
+      "op": "metaball",
+      "parent": "body",
+      "material": "hair",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "resolution": 0.02,
+        "threshold": 0.6,
+        "blobs": [
+          {
+            "position": [
+              0,
+              0.02,
+              1.74
+            ],
+            "radius": 0.13
+          },
+          {
+            "position": [
+              0,
+              0.06,
+              1.62
+            ],
+            "radius": 0.11
+          },
+          {
+            "position": [
+              -0.06,
+              0.05,
+              1.52
+            ],
+            "radius": 0.07
+          },
+          {
+            "position": [
+              0.06,
+              0.05,
+              1.52
+            ],
+            "radius": 0.07
+          },
+          {
+            "position": [
+              0,
+              0.07,
+              1.45
+            ],
+            "radius": 0.06
+          }
+        ]
+      }
+    },
+    {
+      "id": "beard",
+      "op": "metaball",
+      "parent": "body",
+      "material": "hair",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "resolution": 0.02,
+        "threshold": 0.6,
+        "blobs": [
+          {
+            "position": [
+              0,
+              -0.09,
+              1.6
+            ],
+            "radius": 0.075
+          },
+          {
+            "position": [
+              0,
+              -0.08,
+              1.53
+            ],
+            "radius": 0.06
+          },
+          {
+            "position": [
+              -0.05,
+              -0.07,
+              1.62
+            ],
+            "radius": 0.045
+          },
+          {
+            "position": [
+              0.05,
+              -0.07,
+              1.62
+            ],
+            "radius": 0.045
+          }
+        ]
+      }
+    },
+    {
+      "id": "cuirass",
+      "op": "skin",
+      "parent": "body",
+      "material": "dark_steel",
+      "modifiers": [
+        {
+          "type": "displace",
+          "strength": 0.004,
+          "scale": 0.08,
+          "detail": 2
+        }
+      ],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "joints": {
+          "waist": {
+            "position": [
+              0,
+              -0.01,
+              1.08
+            ],
+            "radius": [
+              0.19,
+              0.145
+            ]
+          },
+          "mid": {
+            "position": [
+              0,
+              -0.02,
+              1.26
+            ],
+            "radius": [
+              0.215,
+              0.155
+            ]
+          },
+          "top": {
+            "position": [
+              0,
+              -0.02,
+              1.42
+            ],
+            "radius": [
+              0.23,
+              0.16
+            ]
+          }
+        },
+        "edges": [
+          [
+            "waist",
+            "mid"
+          ],
+          [
+            "mid",
+            "top"
+          ]
+        ],
+        "subdivision": 2
+      }
+    },
+    {
+      "id": "pauldron",
+      "op": "metaball",
+      "parent": "body",
+      "material": "bronze",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "resolution": 0.02,
+        "threshold": 0.6,
+        "blobs": [
+          {
+            "position": [
+              -0.26,
+              0.0,
+              1.5
+            ],
+            "radius": 0.11,
+            "shape": "ellipsoid",
+            "size": [
+              1.2,
+              1.0,
+              0.8
+            ]
+          },
+          {
+            "position": [
+              -0.3,
+              0.0,
+              1.42
+            ],
+            "radius": 0.09,
+            "shape": "ellipsoid",
+            "size": [
+              1.1,
+              1.0,
+              0.7
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "cloak",
+      "op": "extrude",
+      "parent": "body",
+      "material": "cloak",
+      "modifiers": [
+        {
+          "type": "subdivision",
+          "levels": 2
+        },
+        {
+          "type": "displace",
+          "strength": 0.03,
+          "scale": 0.25,
+          "detail": 3
+        }
+      ],
+      "transform": {
+        "location": [
+          0.3,
+          0.03,
+          0.55
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "outline": [
+          [
+            -0.3,
+            -0.14
+          ],
+          [
+            0.02,
+            -0.12
+          ],
+          [
+            0.04,
+            0.12
+          ],
+          [
+            -0.32,
+            0.1
+          ]
+        ],
+        "depth": 0.95,
+        "taper": 0.85
+      }
+    },
+    {
+      "id": "sash",
+      "op": "primitive",
+      "parent": "body",
+      "material": "sash",
+      "modifiers": [
+        {
+          "type": "displace",
+          "strength": 0.01,
+          "scale": 0.1
+        }
+      ],
+      "transform": {
+        "location": [
+          0,
+          -0.005,
+          1.06
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "shape": "torus",
+        "size": [
+          0.42,
+          0.42,
+          0.06
+        ],
+        "segments": 32
+      }
+    },
+    {
+      "id": "katana",
+      "op": "tube",
+      "parent": "body",
+      "material": "dark_steel",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0.19,
+          0.06,
+          1.02
+        ],
+        "rotation_euler": [
+          0.35,
+          0,
+          -0.15
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "points": [
+          [
+            0,
+            0,
+            0.18
+          ],
+          [
+            0,
+            0,
+            0.0
+          ],
+          [
+            0,
+            -0.05,
+            -0.55
+          ]
+        ],
+        "radius": [
+          0.016,
+          0.02,
+          0.012
+        ],
+        "bezier": false,
+        "segments": 12
+      }
+    },
+    {
+      "id": "guard",
+      "op": "revolve",
+      "parent": "katana",
+      "material": "bronze",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "profile": [
+          [
+            0.0,
+            -0.006
+          ],
+          [
+            0.045,
+            -0.006
+          ],
+          [
+            0.045,
+            0.006
+          ],
+          [
+            0.0,
+            0.006
+          ]
+        ],
+        "segments": 24
+      }
+    },
+    {
+      "id": "boot_l",
+      "op": "skin",
+      "parent": "body",
+      "material": "leather",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "joints": {
+          "shin": {
+            "position": [
+              0.11,
+              0,
+              0.34
+            ],
+            "radius": 0.07
+          },
+          "ankle": {
+            "position": [
+              0.11,
+              0,
+              0.09
+            ],
+            "radius": 0.055
+          },
+          "toe": {
+            "position": [
+              0.11,
+              -0.14,
+              0.035
+            ],
+            "radius": [
+              0.055,
+              0.035
+            ]
+          }
+        },
+        "edges": [
+          [
+            "shin",
+            "ankle"
+          ],
+          [
+            "ankle",
+            "toe"
+          ]
+        ],
+        "subdivision": 2
+      }
+    },
+    {
+      "id": "boot_r",
+      "op": "skin",
+      "parent": "body",
+      "material": "leather",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {},
+      "mirror_of": "boot_l"
+    }
+  ],
+  "materials": {
+    "skin": {
+      "base_color": [
+        0.62,
+        0.45,
+        0.36
+      ],
+      "roughness": 0.55,
+      "subsurface": 0.15,
+      "bump": {
+        "strength": 0.15,
+        "scale": 40
+      }
+    },
+    "eye": {
+      "base_color": [
+        0.55,
+        0.62,
+        0.65
+      ],
+      "roughness": 0.1,
+      "specular": 0.8
+    },
+    "hair": {
+      "base_color": [
+        0.85,
+        0.85,
+        0.82
+      ],
+      "roughness": 0.75,
+      "noise": {
+        "scale": 60,
+        "strength": 0.25,
+        "color": [
+          0.55,
+          0.55,
+          0.52
+        ]
+      },
+      "bump": {
+        "strength": 0.4,
+        "scale": 80
+      }
+    },
+    "dark_steel": {
+      "base_color": [
+        0.12,
+        0.11,
+        0.11
+      ],
+      "metallic": 0.85,
+      "roughness": 0.5,
+      "grunge": {
+        "strength": 0.5,
+        "scale": 6
+      },
+      "scratches": {
+        "strength": 0.25
+      }
+    },
+    "bronze": {
+      "base_color": [
+        0.55,
+        0.36,
+        0.16
+      ],
+      "metallic": 0.9,
+      "roughness": 0.45,
+      "grunge": {
+        "strength": 0.4
+      },
+      "bump": {
+        "strength": 0.3,
+        "scale": 30
+      }
+    },
+    "cloak": {
+      "base_color": [
+        0.07,
+        0.065,
+        0.065
+      ],
+      "roughness": 0.95,
+      "sheen": 0.3,
+      "noise": {
+        "scale": 8,
+        "strength": 0.3,
+        "color": [
+          0.12,
+          0.11,
+          0.1
+        ]
+      }
+    },
+    "sash": {
+      "base_color": [
+        0.42,
+        0.06,
+        0.05
+      ],
+      "roughness": 0.85,
+      "noise": {
+        "scale": 20,
+        "strength": 0.3,
+        "color": [
+          0.25,
+          0.04,
+          0.03
+        ]
+      }
+    },
+    "leather": {
+      "base_color": [
+        0.16,
+        0.12,
+        0.09
+      ],
+      "roughness": 0.7,
+      "grunge": {
+        "strength": 0.4
+      }
+    }
+  },
+  "landmarks": {
+    "eye_L": {
+      "part": "eye_l",
+      "anchor": "center"
+    },
+    "eye_R": {
+      "part": "eye_r",
+      "anchor": "center"
+    },
+    "eye_midpoint": {
+      "part": "body",
+      "anchor": "joint:head",
+      "offset": [
+        0,
+        -0.085,
+        0
+      ]
+    },
+    "ear_L": {
+      "part": "body",
+      "anchor": "joint:head",
+      "offset": [
+        0.09,
+        0.01,
+        -0.02
+      ]
+    },
+    "ear_R": {
+      "part": "body",
+      "anchor": "joint:head",
+      "offset": [
+        -0.09,
+        0.01,
+        -0.02
+      ]
+    },
+    "head_top": {
+      "part": "body",
+      "anchor": "joint:head_top",
+      "offset": [
+        0,
+        0,
+        0.058
+      ]
+    },
+    "chin": {
+      "part": "body",
+      "anchor": "joint:head_base",
+      "offset": [
+        0,
+        -0.07,
+        -0.065
+      ]
+    },
+    "neck": {
+      "part": "body",
+      "anchor": "joint:neck"
+    },
+    "chest": {
+      "part": "body",
+      "anchor": "joint:chest"
+    },
+    "shoulder_L": {
+      "part": "body",
+      "anchor": "joint:shoulder_l"
+    },
+    "shoulder_R": {
+      "part": "body",
+      "anchor": "joint:shoulder_r"
+    },
+    "hand_L": {
+      "part": "body",
+      "anchor": "joint:hand_l"
+    },
+    "hand_R": {
+      "part": "body",
+      "anchor": "joint:hand_r"
+    },
+    "hip": {
+      "part": "body",
+      "anchor": "joint:hip"
+    },
+    "foot_L": {
+      "part": "body",
+      "anchor": "joint:foot_l"
+    },
+    "foot_R": {
+      "part": "body",
+      "anchor": "joint:foot_r"
+    },
+    "ground_contact": {
+      "part": "body",
+      "anchor": "joint:hip",
+      "offset": [
+        0,
+        0,
+        -0.98
+      ]
+    }
+  },
+  "skeleton": null
+}

@@ -1,0 +1,145 @@
+"""Studio backend: HTTP API, SSE chat through a fake claude, file guards."""
+
+import json
+import os
+import shutil
+import sys
+import tempfile
+import threading
+import unittest
+import urllib.error
+import urllib.request
+from http.server import ThreadingHTTPServer
+from pathlib import Path
+from unittest import mock
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from server import claude_runner, director, studio        # noqa: E402
+from server import state as state_mod                       # noqa: E402
+
+
+class StudioBase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = Path(tempfile.mkdtemp())
+        cls.env = mock.patch.dict(os.environ, {"CLAUDE_BIN": str(ROOT / "tests" / "fake_claude.py")})
+        cls.env.start()
+        cls.patches = [mock.patch.object(claude_runner, "STATE_FILE", cls.tmp / "studio_state.json"),
+                       mock.patch.object(director, "TAKES_DIR", cls.tmp / "takes"),
+                       mock.patch.object(state_mod, "STATE", state_mod.State(str(cls.tmp / "t.sqlite")))]
+        for p in cls.patches:
+            p.start()
+        cls.srv = ThreadingHTTPServer(("127.0.0.1", 0), studio.Handler)
+        cls.port = cls.srv.server_address[1]
+        threading.Thread(target=cls.srv.serve_forever, daemon=True).start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.srv.shutdown()
+        for p in cls.patches:
+            p.stop()
+        cls.env.stop()
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def get(self, path):
+        with urllib.request.urlopen(f"http://127.0.0.1:{self.port}{path}") as r:
+            return r.status, r.read()
+
+    def post(self, path, body=None):
+        req = urllib.request.Request(f"http://127.0.0.1:{self.port}{path}", method="POST",
+                                     data=json.dumps(body or {}).encode(), headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req) as r:
+                return r.status, r.read()
+        except urllib.error.HTTPError as e:
+            return e.code, e.read()
+
+
+class TestApi(StudioBase):
+    def test_overview(self):
+        code, body = self.get("/api/overview")
+        d = json.loads(body)
+        self.assertEqual(code, 200)
+        self.assertIn("s01_002", [s["id"] for s in d["shots"]])
+        self.assertTrue(d["breakdown"]["approved"])
+        self.assertTrue(d["claude"])
+
+    def test_shot_info(self):
+        code, body = self.get("/api/shot?id=blockout_example")
+        d = json.loads(body)
+        self.assertEqual(code, 200)
+        self.assertTrue(d["valid"]["ok"])
+        self.assertEqual(d["cameras"], ["cam_main"])
+        self.assertAlmostEqual(d["aspect"], 854 / 480)
+
+    def test_unknown_shot_is_400_with_message(self):
+        code, body = self.post("/api/action", {"shot": "nope", "action": "validate"})
+        self.assertEqual(code, 400)
+        self.assertIn("no spec", json.loads(body)["error"])
+
+    def test_action_validate(self):
+        code, body = self.post("/api/action", {"shot": "blockout_example", "action": "validate"})
+        self.assertEqual(code, 200)
+        self.assertTrue(json.loads(body)["ok"])
+
+    def test_file_guard(self):
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            self.get("/files/../CLAUDE.md")
+        self.assertIn(ctx.exception.code, (403, 404))
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            self.get("/files/server/db.py")
+        self.assertEqual(ctx.exception.code, 403)
+
+    def test_static_ui_served(self):
+        code, body = self.get("/")
+        self.assertEqual(code, 200)
+        self.assertIn(b"Blendy Studio", body)
+
+    def test_take_round_trip(self):
+        code, body = self.post("/api/take", {"shot": "blockout_example", "mode": "keyframe", "samples": [
+            {"frame": 1, "target": "@hero_block.top", "distance": 4, "azimuth": 10, "elevation": 5, "focal": 47}]})
+        self.assertEqual(code, 200)
+        take_id = json.loads(body)["take_id"]
+        _, body = self.get("/api/shot?id=blockout_example")
+        self.assertEqual(json.loads(body)["takes"][0]["id"], take_id)
+
+
+class TestChat(StudioBase):
+    def stream(self, message):
+        req = urllib.request.Request(f"http://127.0.0.1:{self.port}/api/chat", method="POST",
+                                     data=json.dumps({"message": message, "shot": "blockout_example"}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req) as r:
+            self.assertEqual(r.headers["Content-Type"], "text/event-stream")
+            return [json.loads(l[6:]) for l in r.read().decode().split("\n\n") if l.startswith("data: ")]
+
+    def test_stream_events_and_session_resume(self):
+        self.post("/api/chat/reset")
+        events = self.stream("hello")
+        types = [e["type"] for e in events]
+        self.assertEqual(types, ["init", "text", "tool_use", "tool_result", "result", "done"])
+        self.assertEqual(events[1]["text"], "echo: hello")
+        self.assertEqual(events[3]["images"], ["preview/x/camera_fast_f0001.png"])
+        state = claude_runner.load_state()
+        self.assertEqual(state["session_id"], "sess-fake-0001")
+        self.assertEqual(state["shot"], "blockout_example")
+        # second turn resumes the session
+        events = self.stream("again")
+        self.assertEqual(events[0]["session_id"], "sess-fake-0001")
+        self.assertEqual(claude_runner.load_state()["turns"], 2)
+
+    def test_command_never_carries_an_api_key(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-should-not-leak"}):
+            turn = claude_runner.ClaudeTurn("x", None, None)
+            list(turn.events())
+        cmd = claude_runner._command("x", "s1", "shot", None)
+        self.assertIn("--resume", cmd)
+        self.assertIn("--strict-mcp-config", cmd)
+        self.assertIn("mcp__blendy__*", cmd)
+        self.assertTrue(any(str(ROOT / ".mcp.json") == c for c in cmd))
+
+
+if __name__ == "__main__":
+    unittest.main()

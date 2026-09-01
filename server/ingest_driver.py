@@ -64,9 +64,6 @@ def acquire(source: str, ref: str, staging: str) -> tuple[str, dict[str, Any]]:
                                                              "url": f"https://polyhaven.com/a/{slug}"}
         return polyhaven.download_model_bundle(slug, staging), {"license": polyhaven.CDN_LICENSE,
                                                                 "url": f"https://polyhaven.com/a/{slug}"}
-    if source in ("sketchfab", "meshy", "tripo"):
-        raise NotImplementedError(f"{source}: needs an API key and a client; drop the file under "
-                                  "assets/ and use source 'local' meanwhile")
     raise ValueError(f"unknown source {source!r}")
 
 
@@ -158,7 +155,7 @@ def resolved_map(spec: dict[str, Any], db: Database | None = None) -> dict[str, 
     unresolved locals are left to the compiler."""
     out: dict[str, Any] = {}
     for asset in spec["assets"]:
-        if asset["source"] == "primitive":
+        if asset["source"] in ("primitive", "model"):
             continue
         try:
             r = resolve_asset(asset["source"], asset["ref"], db, render_views=False)

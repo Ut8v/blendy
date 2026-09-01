@@ -1,0 +1,109 @@
+{
+  "version": "1.1",
+  "meta": {
+    "name": "blockout_example",
+    "fps": 24,
+    "frame_start": 1,
+    "frame_end": 48,
+    "seed": 1
+  },
+  "world": {
+    "hdri": null,
+    "strength": 1.0,
+    "background_color": [0.05, 0.06, 0.08]
+  },
+  "assets": [
+    {
+      "id": "ground",
+      "source": "primitive",
+      "ref": "plane",
+      "transform": {
+        "location": [0.0, 0.0, 0.0],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [12.0, 12.0, 1.0]
+      },
+      "material_overrides": {
+        "default": { "base_color": [0.22, 0.22, 0.24], "roughness": 0.9, "metallic": 0.0 }
+      }
+    },
+    {
+      "id": "hero_block",
+      "source": "primitive",
+      "ref": "cube",
+      "transform": {
+        "location": [0.0, 0.0, 1.0],
+        "rotation_euler": [0.0, 0.0, 0.3926991],
+        "scale": [1.0, 1.0, 1.0]
+      },
+      "material_overrides": {
+        "default": { "base_color": [0.8, 0.35, 0.2], "roughness": 0.45, "metallic": 0.0 }
+      }
+    },
+    {
+      "id": "companion_sphere",
+      "source": "primitive",
+      "ref": "uv_sphere",
+      "transform": {
+        "location": [2.6, 0.8, 0.7],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [0.7, 0.7, 0.7]
+      }
+    }
+  ],
+  "rigs": [],
+  "animation": [],
+  "cameras": [
+    {
+      "id": "cam_main",
+      "type": "PERSP",
+      "transform": {
+        "location": [7.0, -7.0, 4.2],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      },
+      "focal": 50.0,
+      "dof": { "focus_distance": 10.6, "f_stop": 2.8, "focus_target": "hero_block" },
+      "track_target": "hero_block",
+      "keyframes": [
+        { "channel": "location", "frame": 1,  "value": [7.0, -7.0, 4.2], "interpolation": "BEZIER" },
+        { "channel": "location", "frame": 48, "value": [4.5, -8.5, 3.0], "interpolation": "BEZIER" }
+      ]
+    }
+  ],
+  "lights": [
+    {
+      "id": "key",
+      "type": "AREA",
+      "transform": {
+        "location": [4.0, -3.0, 6.0],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      },
+      "energy": 900.0,
+      "color": [1.0, 0.96, 0.9],
+      "size": 3.0,
+      "track_target": "hero_block"
+    },
+    {
+      "id": "fill",
+      "type": "AREA",
+      "transform": {
+        "location": [-5.0, -2.0, 2.5],
+        "rotation_euler": [0.0, 0.0, 0.0],
+        "scale": [1.0, 1.0, 1.0]
+      },
+      "energy": 180.0,
+      "color": [0.75, 0.82, 1.0],
+      "size": 4.0,
+      "track_target": "hero_block"
+    }
+  ],
+  "render": {
+    "engine": "BLENDER_WORKBENCH",
+    "samples": 1,
+    "resolution": [854, 480],
+    "output": "preview/blockout_example",
+    "camera": "cam_main",
+    "film_transparent": false
+  }
+}

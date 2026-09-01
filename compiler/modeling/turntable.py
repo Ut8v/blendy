@@ -60,7 +60,8 @@ def _studio_lights(scene, center: Vector, extent: float) -> None:
     ground.materials.append(mat)
 
 
-def render(scene, model: dict[str, Any], objects, out_dir: str, views: list[str], quality: str) -> list[str]:
+def render(scene, model: dict[str, Any], objects, out_dir: str, views: list[str], quality: str,
+           landmarks: dict[str, Any] | None = None, root=None) -> list[str]:
     os.makedirs(out_dir, exist_ok=True)
     lo, hi = _bounds(objects)
     center, extent = (lo + hi) / 2, max((hi - lo).length, 0.2)
@@ -79,8 +80,8 @@ def render(scene, model: dict[str, Any], objects, out_dir: str, views: list[str]
         if view == "head":
             if model["kind"] != "character":
                 continue
-            head = Vector((center.x, center.y, hi.z - 0.12 * (hi.z - lo.z)))
-            dist = 0.22 * (hi.z - lo.z) + 0.3
+            head, span = _head_target(landmarks, root, center, lo, hi)
+            dist = max(0.35, span * 3.2)
             az = math.radians(20.0)
             cam.location = head + Vector((dist * math.sin(az), -dist * math.cos(az), dist * 0.15))
             cam.rotation_euler = look_at_euler(cam.location, head)
@@ -99,6 +100,24 @@ def render(scene, model: dict[str, Any], objects, out_dir: str, views: list[str]
     if ref and os.path.exists(ref if os.path.isabs(ref) else str(_root() / ref)):
         outputs.append(_side_by_side(out_dir, outputs[0], ref if os.path.isabs(ref) else str(_root() / ref)))
     return outputs
+
+
+def _head_target(landmarks, root, center, lo, hi):
+    """Frame the head on the model's own landmarks when it has them: eye_midpoint,
+    with the chin..head_top span setting the distance. Falls back to the bbox top."""
+    lm = landmarks or {}
+    def world(name):
+        e = lm.get(name)
+        if not e or "position" not in e:
+            return None
+        p = Vector(e["position"])
+        return (root.matrix_world @ p) if root is not None else p
+    eye, chin, top = world("eye_midpoint"), world("chin"), world("head_top")
+    if eye is not None:
+        span = (top.z - chin.z) if (top is not None and chin is not None) else 0.25
+        return Vector((eye.x, eye.y, eye.z - 0.03)), max(0.18, span)
+    height = hi.z - lo.z
+    return Vector((center.x, center.y, hi.z - 0.12 * height)), 0.25 * height
 
 
 def _root():

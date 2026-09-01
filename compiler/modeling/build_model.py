@@ -205,7 +205,8 @@ def main() -> int:
         profile = write_profile(model, root, objects, prof_path)
         outputs = []
         if a.preview_dir:
-            outputs = turntable.render(scn, model, objects, a.preview_dir, a.views.split(","), a.quality)
+            outputs = turntable.render(scn, model, objects, a.preview_dir, a.views.split(","), a.quality,
+                                       landmarks=profile["landmarks"], root=root)
         if a.out:
             sc.save_blend(a.out)
         print("BLENDY_RESULT " + json.dumps({"ok": True, "profile": str(prof_path), "outputs": outputs,

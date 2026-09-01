@@ -1,0 +1,341 @@
+{
+  "version": "1.1",
+  "meta": {
+    "name": "s01_002",
+    "fps": 24,
+    "frame_start": 1,
+    "frame_end": 96,
+    "seed": 1
+  },
+  "world": {
+    "hdri": null,
+    "strength": 0.6,
+    "background_color": [
+      0.55,
+      0.6,
+      0.7
+    ]
+  },
+  "assets": [
+    {
+      "id": "floor",
+      "source": "primitive",
+      "ref": "plane",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          4,
+          4,
+          1
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.35,
+            0.3,
+            0.25
+          ],
+          "roughness": 0.8
+        }
+      }
+    },
+    {
+      "id": "table",
+      "source": "primitive",
+      "ref": "cube",
+      "transform": {
+        "location": [
+          0.9,
+          0.6,
+          0.375
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.6,
+          0.4,
+          0.375
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.5,
+            0.4,
+            0.3
+          ],
+          "roughness": 0.6
+        }
+      }
+    },
+    {
+      "id": "maya_mesh",
+      "source": "local",
+      "ref": "characters/maya.fbx",
+      "transform": {
+        "location": [
+          -1.6,
+          1.2,
+          0.0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "dan_mesh",
+      "source": "local",
+      "ref": "characters/dan.fbx",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  ],
+  "rigs": [
+    {
+      "id": "maya",
+      "asset_id": "maya_mesh",
+      "skeleton": "mixamo",
+      "retarget_profile": "mixamo_default"
+    },
+    {
+      "id": "dan",
+      "asset_id": "dan_mesh",
+      "skeleton": "mixamo",
+      "retarget_profile": "mixamo_default"
+    }
+  ],
+  "animation": [
+    {
+      "id": "maya_idle",
+      "rig_id": "maya",
+      "clip": "mixamo/idle",
+      "frame_start": 1,
+      "blend_in": 0,
+      "blend_out": 0,
+      "loop": true
+    },
+    {
+      "id": "dan_enter",
+      "rig_id": "dan",
+      "clip": "mixamo/walking_forward",
+      "frame_start": 1,
+      "blend_in": 0,
+      "blend_out": 6,
+      "loop": false
+    },
+    {
+      "id": "dan_stop",
+      "rig_id": "dan",
+      "clip": "mixamo/idle",
+      "frame_start": 40,
+      "blend_in": 6,
+      "blend_out": 0,
+      "loop": true
+    }
+  ],
+  "cameras": [
+    {
+      "id": "cam_main",
+      "type": "PERSP",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "focal": 50.0,
+      "dof": {
+        "focus_distance": 2.0,
+        "f_stop": 2.8,
+        "focus_target": "@maya_mesh.eye_midpoint"
+      },
+      "track_target": null,
+      "keyframes": [],
+      "move": {
+        "preset": null,
+        "keys": [
+          {
+            "frame": 1,
+            "target": "@maya_mesh.eye_midpoint",
+            "distance": 2.2,
+            "azimuth": 200.0,
+            "elevation": 4.0,
+            "focal": 50.0,
+            "interpolation": "BEZIER"
+          },
+          {
+            "frame": 96,
+            "target": "@maya_mesh.eye_midpoint",
+            "distance": 1.9,
+            "azimuth": 215.0,
+            "elevation": 2.0,
+            "focal": 50.0,
+            "interpolation": "BEZIER"
+          }
+        ]
+      }
+    }
+  ],
+  "lights": [
+    {
+      "id": "key_window",
+      "type": "AREA",
+      "transform": {
+        "location": [
+          -3.0,
+          -1.5,
+          2.6
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "energy": 600.0,
+      "color": [
+        1.0,
+        0.93,
+        0.82
+      ],
+      "size": 2.5,
+      "track_target": "@table.top"
+    },
+    {
+      "id": "fill_room",
+      "type": "AREA",
+      "transform": {
+        "location": [
+          3.0,
+          -3.0,
+          2.2
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "energy": 120.0,
+      "color": [
+        0.8,
+        0.86,
+        1.0
+      ],
+      "size": 4.0,
+      "track_target": "@table.top"
+    }
+  ],
+  "render": {
+    "engine": "BLENDER_EEVEE",
+    "samples": 64,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "output": "renders/s01_002",
+    "camera": "cam_main",
+    "film_transparent": false,
+    "file_format": "PNG",
+    "world_lighting_preset": "kitchen_morning"
+  },
+  "sequence": {
+    "shot_id": "s01_002",
+    "scene_id": "s01",
+    "location": "kitchen",
+    "look": "kitchen_morning",
+    "cast": [
+      {
+        "cast_id": "maya",
+        "rig_id": "maya"
+      },
+      {
+        "cast_id": "dan",
+        "rig_id": "dan"
+      }
+    ],
+    "dialogue": [
+      {
+        "line_id": "s01_l001",
+        "cast_id": "maya",
+        "frame_start": 30
+      }
+    ],
+    "enters_with": {
+      "positions": {
+        "maya": "counter"
+      },
+      "props": {},
+      "world": {
+        "door_open": false
+      }
+    },
+    "exits_with": {
+      "positions": {
+        "maya": "counter",
+        "dan": "doorway"
+      },
+      "props": {},
+      "world": {
+        "door_open": true
+      }
+    }
+  }
+}

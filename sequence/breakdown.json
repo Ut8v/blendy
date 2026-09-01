@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "bible": "sequence/bible.json",
+  "approved": true,
+  "shots": [
+    { "id": "s01_001", "scene_id": "s01", "script_ref": ["s01_b001"], "location": "kitchen",
+      "look": "kitchen_morning", "cast": ["maya"],
+      "beat": "Maya at the counter, back to us; the kettle clicks off. Establish the room.",
+      "shot_type": "wide", "duration_frames": 120, "dialogue": [],
+      "enters_with": { "positions": { "maya": "counter" }, "props": {}, "world": { "door_open": false } },
+      "exits_with":  { "positions": { "maya": "counter" }, "props": {}, "world": { "door_open": false } } },
+    { "id": "s01_002", "scene_id": "s01", "script_ref": ["s01_b002", "s01_l001"], "location": "kitchen",
+      "look": "kitchen_morning", "cast": ["maya", "dan"],
+      "beat": "Dan stops in the doorway. Maya, still turned away: you're late.",
+      "shot_type": "medium", "duration_frames": 96, "dialogue": ["s01_l001"],
+      "enters_with": { "positions": { "maya": "counter" }, "props": {}, "world": { "door_open": false } },
+      "exits_with":  { "positions": { "maya": "counter", "dan": "doorway" }, "props": {}, "world": { "door_open": true } } },
+    { "id": "s01_003", "scene_id": "s01", "script_ref": ["s01_l002", "s01_b003"], "location": "kitchen",
+      "look": "kitchen_morning", "cast": ["maya", "dan"],
+      "beat": "Dan: the bridge was closed. He crosses and sits heavily; Maya finally turns.",
+      "shot_type": "two_shot", "duration_frames": 264, "dialogue": ["s01_l002"],
+      "enters_with": { "positions": { "maya": "counter", "dan": "doorway" }, "props": {}, "world": { "door_open": true } },
+      "exits_with":  { "positions": { "maya": "counter", "dan": "table_seat" }, "props": {}, "world": { "door_open": true } } }
+  ]
+}

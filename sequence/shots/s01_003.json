@@ -1,0 +1,328 @@
+{
+  "version": "1.1",
+  "meta": {
+    "name": "s01_003",
+    "fps": 24,
+    "frame_start": 1,
+    "frame_end": 264,
+    "seed": 1
+  },
+  "world": {
+    "hdri": null,
+    "strength": 0.6,
+    "background_color": [
+      0.55,
+      0.6,
+      0.7
+    ]
+  },
+  "assets": [
+    {
+      "id": "floor",
+      "source": "primitive",
+      "ref": "plane",
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          4,
+          4,
+          1
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.35,
+            0.3,
+            0.25
+          ],
+          "roughness": 0.8
+        }
+      }
+    },
+    {
+      "id": "table",
+      "source": "primitive",
+      "ref": "cube",
+      "transform": {
+        "location": [
+          0.9,
+          0.6,
+          0.375
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.6,
+          0.4,
+          0.375
+        ]
+      },
+      "material_overrides": {
+        "default": {
+          "base_color": [
+            0.5,
+            0.4,
+            0.3
+          ],
+          "roughness": 0.6
+        }
+      }
+    },
+    {
+      "id": "maya_mesh",
+      "source": "local",
+      "ref": "characters/maya.fbx",
+      "transform": {
+        "location": [
+          -1.6,
+          1.2,
+          0.0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "dan_mesh",
+      "source": "local",
+      "ref": "characters/dan.fbx",
+      "transform": {
+        "location": [
+          2.4,
+          -2.6,
+          0.0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      }
+    }
+  ],
+  "rigs": [
+    {
+      "id": "maya",
+      "asset_id": "maya_mesh",
+      "skeleton": "mixamo",
+      "retarget_profile": "mixamo_default"
+    },
+    {
+      "id": "dan",
+      "asset_id": "dan_mesh",
+      "skeleton": "mixamo",
+      "retarget_profile": "mixamo_default"
+    }
+  ],
+  "animation": [
+    {
+      "id": "maya_idle",
+      "rig_id": "maya",
+      "clip": "mixamo/idle",
+      "frame_start": 1,
+      "blend_in": 0,
+      "blend_out": 8,
+      "loop": true
+    },
+    {
+      "id": "maya_turn",
+      "rig_id": "maya",
+      "clip": "mixamo/turn_left",
+      "frame_start": 190,
+      "blend_in": 8,
+      "blend_out": 0,
+      "loop": false
+    },
+    {
+      "id": "dan_cross",
+      "rig_id": "dan",
+      "clip": "mixamo/walking_forward",
+      "frame_start": 20,
+      "blend_in": 4,
+      "blend_out": 8,
+      "loop": false
+    },
+    {
+      "id": "dan_sit",
+      "rig_id": "dan",
+      "clip": "mixamo/sitting_down",
+      "frame_start": 110,
+      "blend_in": 8,
+      "blend_out": 0,
+      "loop": false
+    }
+  ],
+  "cameras": [
+    {
+      "id": "cam_main",
+      "type": "PERSP",
+      "transform": {
+        "location": [
+          -2.8,
+          -3.6,
+          1.5
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "focal": 35.0,
+      "dof": {
+        "focus_distance": 4.0,
+        "f_stop": 4.0,
+        "focus_target": "@dan_mesh.eye_midpoint"
+      },
+      "track_target": "@table.top",
+      "keyframes": []
+    }
+  ],
+  "lights": [
+    {
+      "id": "key_window",
+      "type": "AREA",
+      "transform": {
+        "location": [
+          -3.0,
+          -1.5,
+          2.6
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "energy": 600.0,
+      "color": [
+        1.0,
+        0.93,
+        0.82
+      ],
+      "size": 2.5,
+      "track_target": "@table.top"
+    },
+    {
+      "id": "fill_room",
+      "type": "AREA",
+      "transform": {
+        "location": [
+          3.0,
+          -3.0,
+          2.2
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "energy": 120.0,
+      "color": [
+        0.8,
+        0.86,
+        1.0
+      ],
+      "size": 4.0,
+      "track_target": "@table.top"
+    }
+  ],
+  "render": {
+    "engine": "BLENDER_EEVEE",
+    "samples": 64,
+    "resolution": [
+      1920,
+      1080
+    ],
+    "output": "renders/s01_003",
+    "camera": "cam_main",
+    "film_transparent": false,
+    "file_format": "PNG",
+    "world_lighting_preset": "kitchen_morning"
+  },
+  "sequence": {
+    "shot_id": "s01_003",
+    "scene_id": "s01",
+    "location": "kitchen",
+    "look": "kitchen_morning",
+    "cast": [
+      {
+        "cast_id": "maya",
+        "rig_id": "maya"
+      },
+      {
+        "cast_id": "dan",
+        "rig_id": "dan"
+      }
+    ],
+    "dialogue": [
+      {
+        "line_id": "s01_l002",
+        "cast_id": "dan",
+        "frame_start": 12
+      }
+    ],
+    "enters_with": {
+      "positions": {
+        "maya": "counter",
+        "dan": "doorway"
+      },
+      "props": {},
+      "world": {
+        "door_open": true
+      }
+    },
+    "exits_with": {
+      "positions": {
+        "maya": "counter",
+        "dan": "table_seat"
+      },
+      "props": {},
+      "world": {
+        "door_open": true
+      }
+    }
+  }
+}

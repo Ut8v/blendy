@@ -1,0 +1,14 @@
+{
+  "kind": "lighting",
+  "name": "kitchen_morning",
+  "description": "Soft window key from camera-left, warm; cool fill from the room.",
+  "world": { "hdri": null, "strength": 0.6, "background_color": [0.55, 0.6, 0.7] },
+  "lights": [
+    { "id": "key_window", "type": "AREA",
+      "transform": { "location": [-3.0, -1.5, 2.6], "rotation_euler": [0, 0, 0], "scale": [1, 1, 1] },
+      "energy": 600.0, "color": [1.0, 0.93, 0.82], "size": 2.5, "track_target": "@table.top" },
+    { "id": "fill_room", "type": "AREA",
+      "transform": { "location": [3.0, -3.0, 2.2], "rotation_euler": [0, 0, 0], "scale": [1, 1, 1] },
+      "energy": 120.0, "color": [0.8, 0.86, 1.0], "size": 4.0, "track_target": "@table.top" }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "title": "Kitchen",
+  "script": "script/kitchen.fountain",
+  "cast": [
+    { "id": "maya", "name": "MAYA", "asset": { "source": "local", "ref": "characters/maya.fbx" },
+      "costume_variant": "default", "scale_reference": 1.68, "skeleton": "mixamo",
+      "retarget_profile": "mixamo_default", "voice": null },
+    { "id": "dan", "name": "DAN", "asset": { "source": "local", "ref": "characters/dan.fbx" },
+      "costume_variant": "coat", "scale_reference": 1.82, "skeleton": "mixamo",
+      "retarget_profile": "mixamo_default", "voice": null }
+  ],
+  "locations": [
+    { "id": "kitchen", "name": "KITCHEN", "aliases": ["THE KITCHEN"],
+      "assets": [
+        { "source": "primitive", "ref": "plane" },
+        { "source": "primitive", "ref": "cube" }
+      ],
+      "layout_preset": null, "ground_plane": 0.0,
+      "blocking_marks": { "counter": [-1.6, 1.2, 0.0], "doorway": [2.4, -2.6, 0.0], "table_seat": [0.9, 0.2, 0.0] } }
+  ],
+  "looks": [
+    { "id": "kitchen_morning", "location_id": "kitchen", "time_of_day": "morning",
+      "lighting_preset": "kitchen_morning", "key_direction": 250.0, "color_grade": "warm_soft", "hdri": null }
+  ],
+  "style": { "fps": 24, "resolution": [1920, 1080], "render_engine": "BLENDER_EEVEE",
+             "lens_set": [24, 35, 50, 85], "aspect": 1.7777778, "samples": 64, "sensor_width": 36.0 }
+}

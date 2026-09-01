@@ -44,7 +44,7 @@
         "required": ["id", "source", "ref", "transform"],
         "properties": {
           "id": {"$ref": "#/$defs/id"},
-          "source": {"enum": ["polyhaven", "sketchfab", "meshy", "tripo", "local", "primitive"]},
+          "source": {"enum": ["model", "primitive", "local", "polyhaven"]},
           "ref": {
             "type": "string",
             "minLength": 1,
@@ -283,7 +283,7 @@
       "additionalProperties": false,
       "required": ["source", "ref"],
       "properties": {
-        "source": {"enum": ["polyhaven", "sketchfab", "meshy", "tripo", "local", "primitive"]},
+        "source": {"enum": ["model", "primitive", "local", "polyhaven"]},
         "ref": {"type": "string", "minLength": 1}
       }
     },

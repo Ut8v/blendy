@@ -110,7 +110,7 @@
       "additionalProperties": false,
       "required": ["source", "ref"],
       "properties": {
-        "source": {"enum": ["polyhaven", "sketchfab", "meshy", "tripo", "local", "primitive"]},
+        "source": {"enum": ["model", "primitive", "local", "polyhaven"]},
         "ref": {"type": "string", "minLength": 1}
       }
     }

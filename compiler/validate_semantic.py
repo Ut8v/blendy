@@ -19,7 +19,7 @@ _CHANNEL_ARITY = {
 _CAMERA_CHANNELS = {"location", "rotation_euler", "scale", "focal",
                     "dof.focus_distance", "dof.f_stop"}
 _LIGHT_CHANNELS = {"location", "rotation_euler", "scale", "energy", "color"}
-_GENERATED_SOURCES = {"meshy", "tripo"}
+_GENERATED_SOURCES: set[str] = set()
 _SECTIONS = ("assets", "rigs", "animation", "cameras", "lights", "audio")
 
 Add = Callable[[Issue], None]
@@ -67,6 +67,12 @@ class _Ctx:
                            path, owner))
             return False
         table = self.profiles.landmarks_for(asset)
+        if table is None and asset["source"] == "model":
+            have = ", ".join(self.profiles.model_ids()) or "none"
+            self.add(Issue("error", "semantic", "model_not_built",
+                           f"{label} '{value}' needs model '{asset['ref']}', which has no profile yet. "
+                           f"Build it with preview_model first (built models: {have}).", path, owner))
+            return False
         if table is None:
             self.add(Issue("error", "semantic", "asset_not_ingested",
                            f"{label} '{value}' needs the profile of '{lref.asset_id}' "
@@ -163,6 +169,11 @@ def _check_transform(ctx: _Ctx, t: dict[str, Any], path: str, eid: str) -> None:
 
 
 def _check_asset(ctx: _Ctx, idx: int, asset: dict[str, Any]) -> None:
+    if asset["source"] == "model" and ctx.profiles.profile_for(asset) is None:
+        have = ", ".join(ctx.profiles.model_ids()) or "none"
+        ctx.add(Issue("error", "semantic", "model_not_built",
+                      f"model '{asset['ref']}' has no profile; build it with preview_model "
+                      f"(built models: {have})", pointer(["assets", idx, "ref"]), asset["id"]))
     if asset["source"] == "primitive":
         ctx.add(Issue("warning", "semantic", "primitive_asset",
                       "primitive is a blocking placeholder and should not survive "

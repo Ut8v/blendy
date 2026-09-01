@@ -16,6 +16,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parent.parent
 PROFILES_DIR = ROOT / "profiles" / "assets"
+MODEL_PROFILES_DIR = ROOT / "profiles" / "models"
+MODELS_DIR = ROOT / "models"
 MANIFEST_PATH = ROOT / "assets" / "manifest.json"
 
 PROFILE_VERSION = 1
@@ -91,9 +93,11 @@ class ProfileIndex:
     """
 
     def __init__(self, manifest: dict[str, Any] | None = None,
-                 profiles: dict[str, dict[str, Any]] | None = None):
+                 profiles: dict[str, dict[str, Any]] | None = None,
+                 models: dict[str, dict[str, Any]] | None = None):
         self._manifest = manifest if manifest is not None else {"assets": {}}
         self._profiles = profiles if profiles is not None else {}
+        self._models = models if models is not None else {}
 
     @classmethod
     def load(cls, manifest_path: Path = MANIFEST_PATH,
@@ -107,7 +111,15 @@ class ProfileIndex:
             for p in sorted(profiles_dir.glob("*.json")):
                 with open(p, "r", encoding="utf-8") as fh:
                     profiles[p.stem] = json.load(fh)
-        return cls(manifest, profiles)
+        models: dict[str, dict[str, Any]] = {}
+        if MODEL_PROFILES_DIR.exists():
+            for p in sorted(MODEL_PROFILES_DIR.glob("*.json")):
+                with open(p, "r", encoding="utf-8") as fh:
+                    models[p.stem] = json.load(fh)
+        return cls(manifest, profiles, models)
+
+    def model_ids(self) -> list[str]:
+        return sorted(self._models)
 
     @staticmethod
     def key(source: str, ref: str) -> str:
@@ -123,6 +135,8 @@ class ProfileIndex:
         if source == "primitive":
             return {"profile_version": PROFILE_VERSION, "class": "prop",
                     "landmarks": primitive_landmarks(ref), "flags": {"generated": False}}
+        if source == "model":
+            return self._models.get(ref)
         h = self.hash_for(source, ref)
         if h is None:
             return None

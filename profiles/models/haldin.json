@@ -1,0 +1,289 @@
+{
+  "profile_version": 1,
+  "model_id": "haldin",
+  "source": "model",
+  "ref": "haldin",
+  "class": "character",
+  "measure": {
+    "bbox_min": [
+      -0.3712514638900757,
+      -0.24458588659763336,
+      -0.01615384966135025
+    ],
+    "bbox_max": [
+      0.3712514638900757,
+      0.2674643099308014,
+      1.8134253025054932
+    ],
+    "dimensions": [
+      0.7425029277801514,
+      0.512050211429596,
+      1.8295791149139404
+    ],
+    "poly_count": 6256
+  },
+  "height": 1.8295791149139404,
+  "declared_height": 1.82,
+  "landmarks": {
+    "eye_L": {
+      "kind": "socket",
+      "position": [
+        -0.03500000014901161,
+        -0.08500000089406967,
+        1.6799999475479126
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "eye_l"
+    },
+    "eye_R": {
+      "kind": "socket",
+      "position": [
+        0.03500000014901161,
+        -0.08500000089406967,
+        1.6799999475479126
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "eye_r"
+    },
+    "eye_midpoint": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        -0.08500000089406967,
+        1.6799999475479126
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "ear_L": {
+      "kind": "socket",
+      "position": [
+        -0.10000000149011612,
+        0.0,
+        1.659999966621399
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "ear_R": {
+      "kind": "socket",
+      "position": [
+        0.10000000149011612,
+        0.0,
+        1.659999966621399
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "head_top": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        0.0,
+        1.8399999141693115
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "chin": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        -0.07999999821186066,
+        1.5699999332427979
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "neck": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        0.0,
+        1.5199999809265137
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "chest": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        -0.019999999552965164,
+        1.3600000143051147
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "shoulder_L": {
+      "kind": "socket",
+      "position": [
+        -0.2199999988079071,
+        0.0,
+        1.4800000190734863
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "shoulder_R": {
+      "kind": "socket",
+      "position": [
+        0.2199999988079071,
+        0.0,
+        1.4800000190734863
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "hand_L": {
+      "kind": "socket",
+      "position": [
+        -0.3400000035762787,
+        -0.029999999329447746,
+        0.8600000143051147
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "hand_R": {
+      "kind": "socket",
+      "position": [
+        0.3400000035762787,
+        -0.029999999329447746,
+        0.8600000143051147
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "hip": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "foot_L": {
+      "kind": "socket",
+      "position": [
+        -0.10999999940395355,
+        -0.11999999731779099,
+        0.029999999329447746
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "foot_R": {
+      "kind": "socket",
+      "position": [
+        0.10999999940395355,
+        -0.11999999731779099,
+        0.029999999329447746
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    },
+    "ground_contact": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "body"
+    }
+  },
+  "parts": [
+    "body",
+    "eye_l",
+    "eye_r",
+    "nose",
+    "hair",
+    "beard",
+    "cuirass",
+    "pauldron",
+    "cloak",
+    "sash",
+    "katana",
+    "guard",
+    "boot_l",
+    "boot_r"
+  ],
+  "flags": {
+    "generated": false,
+    "rig_ok": true,
+    "has_armature": false
+  },
+  "built_at": 1788305830.357564
+}

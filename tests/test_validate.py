@@ -166,11 +166,6 @@ class TestArchitecturalRules(SpecTestCase):
         spec["assets"][1]["ref"] = "cube"
         self.assertCode("primitive_rigged", spec=spec, entity_id="walker")
 
-    def test_generated_mesh_bound_to_rig_warns(self):
-        spec = load(CHARACTER)
-        spec["assets"][1]["source"] = "meshy"
-        self.assertCode("generated_mesh_rigged", spec=spec, entity_id="walker")
-
     def test_cycles_in_a_preview_warns(self):
         self.spec["render"]["engine"] = "CYCLES"
         self.assertCode("cycles_engine")

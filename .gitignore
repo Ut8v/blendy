@@ -1,0 +1,29 @@
+# Build artifacts. The spec is the source of truth; these are regenerable.
+/preview/
+/checkpoints/
+/assets/cache/
+*.blend
+*.blend[0-9]
+*.blend[0-9][0-9]
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Blendy runtime artifacts
+/blendy.sqlite
+/blendy.sqlite-wal
+/blendy.sqlite-shm
+/renders/
+/director/proxies/
+/evals/results/**/*.png
+/assets/cache/_staging/
+
+# Local-only
+/CLAUDE.md
+/.claude/settings.local.json
+/director/studio_state.json
+/renders/*.mp4
+/renders/*.gif

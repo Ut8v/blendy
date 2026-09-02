@@ -125,6 +125,34 @@ class TestModelValidation(unittest.TestCase):
             m["landmarks"][n] = {"part": "body", "anchor": "center"}
         self.assertNotIn("incomplete_character_landmarks", self.codes(m))
 
+    def test_hair_needs_an_emitter_that_is_also_its_parent(self):
+        m = recipe()
+        m["parts"].append({"id": "fuzz", "op": "hair", "parent": None, "material": None,
+                           "modifiers": [], "transform": dict(T),
+                           "params": {"emitter": "ghost", "count": 10, "length": 0.1}})
+        self.assertCode(m, "unknown_ref")
+        m["parts"][-1]["params"]["emitter"] = "body"
+        r = self.assertCode(m, "hair_parent")
+        self.assertIn("body", r.errors[0].message)
+        m["parts"][-1]["parent"] = "body"
+        self.assertTrue(validate_model(m).ok, validate_model(m).format())
+
+    def test_cloth_must_be_pinned_somehow(self):
+        m = recipe()
+        m["parts"].append({"id": "cape", "op": "sheet", "parent": None, "material": None,
+                           "modifiers": [{"type": "cloth", "frame": 10}], "transform": dict(T),
+                           "params": {"size": [0.5, 0.5]}})
+        self.assertCode(m, "modifier_param")
+        m["parts"][-1]["modifiers"][0]["pin"] = "top"
+        self.assertTrue(validate_model(m).ok, validate_model(m).format())
+
+    def test_cloth_collider_must_exist(self):
+        m = recipe()
+        m["parts"].append({"id": "cape", "op": "sheet", "parent": None, "material": None,
+                           "modifiers": [{"type": "cloth", "frame": 10, "pin": "top", "collide": ["nope"]}],
+                           "transform": dict(T), "params": {"size": [0.5, 0.5]}})
+        self.assertCode(m, "unknown_ref")
+
     def test_schema_rejects_unknown_op(self):
         m = recipe(); m["parts"][0]["op"] = "sculpt"
         self.assertCode(m, "invalid_value")

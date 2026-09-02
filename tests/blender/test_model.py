@@ -4,6 +4,7 @@
 """
 
 import json
+import math
 import os
 import shutil
 import sys
@@ -236,6 +237,90 @@ class TestHand(unittest.TestCase):
             _root, objects = build_recipe(one_part("h", "hand", {"length": 0.19, "width": 0.09, "side": side}))
             made[side] = objects["h"]["blendy_points"]["thumb_tip"][0]
         self.assertAlmostEqual(made["l"], -made["r"], places=5)
+
+
+class TestSheet(unittest.TestCase):
+    def test_flat_sheet_is_a_quad_grid_of_the_right_size(self):
+        model = one_part("s", "sheet", {"size": [0.6, 0.9], "resolution": [10, 12]})
+        obj = build_recipe(model)[1]["s"]
+        self.assertEqual(len(obj.data.vertices), 11 * 13)
+        self.assertTrue(all(len(f.vertices) == 4 for f in obj.data.polygons))
+        lo, hi = bounds(obj)
+        self.assertAlmostEqual(hi.x - lo.x, 0.6, places=4)
+        self.assertAlmostEqual(hi.z - lo.z, 0.9, places=4)
+        self.assertAlmostEqual(hi.y - lo.y, 0.0, places=5)      # flat until it is draped
+
+    def test_arc_wraps_the_sheet_around_the_origin(self):
+        model = one_part("s", "sheet", {"size": [0.6, 0.5], "resolution": [12, 6], "arc": 180.0})
+        obj = build_recipe(model)[1]["s"]
+        lo, hi = bounds(obj)
+        radius = 0.6 / math.pi
+        self.assertAlmostEqual(hi.y, radius, delta=0.01)        # middle of the sheet sits behind
+        self.assertAlmostEqual(hi.x - lo.x, 2 * radius, delta=0.01)
+        self.assertLess(hi.x - lo.x, 0.6)                       # wrapped, so it spans less than flat
+
+    def test_publishes_edge_points(self):
+        obj = build_recipe(one_part("s", "sheet", {"size": [0.4, 0.7]}))[1]["s"]
+        self.assertAlmostEqual(obj["blendy_points"]["bottom_center"][2], -0.7, places=5)
+
+
+class TestHair(unittest.TestCase):
+    def hair_model(self, **over):
+        params = {"emitter": "ball", "count": 40, "length": 0.2, "radius": 0.004,
+                  "segments": 5, "sides": 4, "seed": 1}
+        params.update(over)
+        model = one_part("ball", "primitive", {"shape": "sphere", "size": [0.3, 0.3, 0.3], "segments": 16})
+        model["parts"].append({"id": "hair", "op": "hair", "parent": "ball", "material": None,
+                               "modifiers": [], "transform": dict(T0), "params": params})
+        return model
+
+    def test_strands_grow_and_hang_below_their_roots(self):
+        objects = build_recipe(self.hair_model(gravity=1.0))[1]
+        hair = objects["hair"]
+        self.assertGreater(len(hair.data.polygons), 200)
+        lo, hi = bounds(hair)
+        self.assertLess(lo.z, -0.3)                              # falls past the emitter
+        self.assertGreater(hi.z, 0.1)                            # still rooted on top
+
+    def test_gravity_changes_how_far_it_falls(self):
+        drop = {}
+        for g in (0.2, 1.4):
+            obj = build_recipe(self.hair_model(gravity=g))[1]["hair"]
+            drop[g] = bounds(obj)[0].z
+        self.assertLess(drop[1.4], drop[0.2])
+
+    def test_same_seed_is_the_same_hair(self):
+        a = [tuple(round(c, 6) for c in v.co) for v in build_recipe(self.hair_model(seed=5))[1]["hair"].data.vertices]
+        b = [tuple(round(c, 6) for c in v.co) for v in build_recipe(self.hair_model(seed=5))[1]["hair"].data.vertices]
+        c = [tuple(round(c, 6) for c in v.co) for v in build_recipe(self.hair_model(seed=6))[1]["hair"].data.vertices]
+        self.assertEqual(a, b)
+        self.assertNotEqual(a, c)
+
+    def test_normal_bias_keeps_strands_off_the_far_side(self):
+        model = self.hair_model(count=60, region={"axis": "z", "min": 0.0, "max": 1.0,
+                                                  "normal_bias": {"direction": [0, 0, 1], "min_dot": 0.5}})
+        obj = build_recipe(model)[1]["hair"]
+        roots_high = [v.co.z for v in obj.data.vertices if v.co.z > 0]
+        self.assertTrue(roots_high)
+        lo, hi = bounds(obj)
+        self.assertGreater(hi.z, 0.1)          # only the upper cap emitted
+
+
+class TestClothDrape(unittest.TestCase):
+    def test_cloth_falls_and_is_baked_into_the_mesh(self):
+        model = one_part("post", "primitive", {"shape": "cylinder", "size": [0.3, 0.3, 1.0]})
+        model["parts"].append({"id": "cape", "op": "sheet", "parent": None, "material": None,
+                               "transform": {"location": [0, 0, 0.5], "rotation_euler": [0, 0, 0], "scale": [1, 1, 1]},
+                               "modifiers": [{"type": "cloth", "frame": 14, "collide": ["post"],
+                                              "pin_region": {"axis": "z", "min": 0.9, "max": 1.0},
+                                              "stiffness": 5, "bending": 0.1}],
+                               "params": {"size": [0.7, 0.6], "resolution": [14, 14], "arc": 150.0}})
+        objects = build_recipe(model)[1]
+        cape = objects["cape"]
+        self.assertEqual([m.type for m in cape.modifiers], [])       # baked, no live solver left
+        self.assertTrue(any(m.type == "COLLISION" for m in objects["post"].modifiers))
+        ys = [v.co.y for v in cape.data.vertices]
+        self.assertGreater(max(ys) - min(ys), 0.05)                  # it has folded, not stayed rigid
 
 
 class TestPushModifier(unittest.TestCase):

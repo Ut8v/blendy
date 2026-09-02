@@ -61,7 +61,7 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
             sag = slack * math.sin(math.pi * u) * math.sin(math.pi * t)
             if arc > 1e-6:
                 # a cloak starts wrapped around the shoulders: lay the row on a circle
-                # a true arc centred on the part origin, so the sheet wraps the
+                # a true arc centered on the part origin, so the sheet wraps the
                 # body instead of bulging away behind it
                 radius = (w * scale) / arc
                 a = (u - 0.5) * arc
@@ -89,7 +89,10 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
 def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] | None,
                      rng: random.Random) -> list[tuple[Vector, Vector]]:
     """Area-weighted points on the emitter's surface, with their normals, in the
-    emitter's local space. `region` clips by a normalised span on one axis."""
+    emitter's local space. `region` clips by a normalized span on one axis."""
+    # Sampling reads evaluated geometry, so the graph must be current: a stale one
+    # yields different face areas and centers, and identical seeds stop agreeing.
+    bpy.context.view_layer.update()
     depsgraph = bpy.context.evaluated_depsgraph_get()
     mesh = obj.evaluated_get(depsgraph).to_mesh()
     try:
@@ -117,11 +120,11 @@ def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] |
         for _ in range(count):
             r = rng.random() * total
             acc = 0.0
-            for area, centre, normal in faces:
+            for area, center, normal in faces:
                 acc += area
                 if acc >= r:
                     jitter = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))) * 0.004
-                    out.append((centre + jitter, normal.normalized()))
+                    out.append((center + jitter, normal.normalized()))
                     break
         return out
     finally:
@@ -151,11 +154,11 @@ def build_hair(name: str, p: dict[str, Any], smooth: bool | None,
 
     seeds = _emitter_samples(emitter, count, p.get("region"), rng)
     clusters = max(1, int(count * (1.0 - clump) / 4) + 1)
-    centres = [rng.choice(seeds)[0] if seeds else Vector() for _ in range(clusters)]
+    centers = [rng.choice(seeds)[0] if seeds else Vector() for _ in range(clusters)]
 
     bm = bmesh.new()
     for i, (origin, normal) in enumerate(seeds):
-        target = centres[i % clusters]
+        target = centers[i % clusters]
         strand_len = length * rng.uniform(0.75, 1.15)
         r = radius * rng.uniform(0.8, 1.2)
         side = Vector((normal.y, -normal.x, 0.0))
@@ -167,15 +170,15 @@ def build_hair(name: str, p: dict[str, Any], smooth: bool | None,
             t = s / segments
             step = strand_len / segments
             # A strand leaves along the normal and is turned by gravity within the
-            # first centimetres. Without this decay every strand sticks straight out.
+            # first centimeters. Without this decay every strand sticks straight out.
             w = math.exp(-3.2 * max(0.15, gravity) * t)
             heading = normal * w + down * (1.0 - w) * (0.6 + gravity) + bias * 0.6
             pull = (target - pos) * clump * 0.30 * t
             wobble = side * (math.sin(phase + t * math.pi * (1 + curl * 3)) * sway * strand_len * 0.18)
-            for centre, radius in avoid:          # push the strand out of the face
-                away = pos - centre
+            for center, radius in avoid:          # push the strand out of the face
+                away = pos - center
                 if away.length < radius:
-                    pos = centre + (away.normalized() if away.length > 1e-6
+                    pos = center + (away.normalized() if away.length > 1e-6
                                     else Vector((0, -1, 0))) * radius
             path.append({"position": pos.copy(),
                          "size": [r * (1 - taper * t), r * (1 - taper * t)], "roundness": 1.0})

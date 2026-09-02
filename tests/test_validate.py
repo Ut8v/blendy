@@ -76,7 +76,7 @@ class TestSchemaLayer(SpecTestCase):
         self.assertCode("unknown_key")
 
     def test_unknown_key_inside_entity(self):
-        self.spec["assets"][0]["colour"] = [1, 0, 0]
+        self.spec["assets"][0]["color"] = [1, 0, 0]
         self.assertCode("invalid_value", entity_id="ground")
 
     def test_bad_version(self):

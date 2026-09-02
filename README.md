@@ -11,7 +11,7 @@ a person directs. The only software involved is Blender and the add-ons that shi
 with it, and the only outside input is a reference image.
 
 > **Work in progress, and nowhere near a conclusion.** Characters come out
-> stylised rather than convincing. Rigging and posing are not built. Several
+> stylized rather than convincing. Rigging and posing are not built. Several
 > layers have only ever run in their own tests. Nothing here claims the question
 > is answered.
 
@@ -98,13 +98,13 @@ Adding a builder is the normal way to extend the system. See
   time after rigs bind. A camera move written against landmarks survives
   re-blocking and recasting.
 - Landmark empties cancel their parent's scale, so an anchored child keeps its own
-  dimensions and offsets stay in metres.
+  dimensions and offsets stay in meters.
 - Inheritance is enforced: frame rate, resolution, engine, lens set, the look's
   hdri and lighting preset, casting and continuity all come from the bible and
   breakdown. A shot that disagrees fails validation.
 - A reference to an asset that was never profiled is an error, not a guess.
 - Take decimation is Ramer–Douglas–Peucker over the multi-channel track in
-  tolerance-normalised units, with a minimum key spacing.
+  tolerance-normalized units, with a minimum key spacing.
 - Eval scoring is three deterministic metrics against human-accepted references.
   It detects drift; it does not judge quality.
 

@@ -52,7 +52,7 @@ def normalize(root, meshes, source: str, skeleton_profile: dict | None) -> dict[
     if skeleton_profile and skeleton_profile.get("import", {}).get("scale"):
         # Importers apply FBX unit scale already; only correct if it is clearly off.
         h = _height(meshes)
-        if h > 20:            # centimetres came through as metres
+        if h > 20:            # centimeters came through as meters
             scale = skeleton_profile["import"]["scale"]
     else:
         h = _height(meshes)

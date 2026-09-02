@@ -4,7 +4,7 @@
   "description": "Mixamo auto-rigger skeleton. Solve once; every Mixamo character inherits it.",
   "import": {
     "scale": 0.01,
-    "note": "Mixamo FBX is centimetres, Y-up. The FBX importer handles the axis; scale is applied at ingest."
+    "note": "Mixamo FBX is centimeters, Y-up. The FBX importer handles the axis; scale is applied at ingest."
   },
   "prefix": "mixamorig:",
   "root_bone": "mixamorig:Hips",

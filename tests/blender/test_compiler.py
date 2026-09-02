@@ -91,7 +91,7 @@ class TestStaticBuild(unittest.TestCase):
         ws = sphere.matrix_world.to_scale()
         for got, want in zip(ws, spec["assets"][2]["transform"]["scale"]):
             self.assertAlmostEqual(got, want, places=4)          # not multiplied by the parent
-        # top of a cube scaled z=1.5 at z=1 is z=2.5; offset 0.25 m above it, in metres
+        # top of a cube scaled z=1.5 at z=1 is z=2.5; offset 0.25 m above it, in meters
         self.assertAlmostEqual(sphere.matrix_world.translation.z, 2.75, places=4)
 
     def test_camera_move_builds_helpers(self):

@@ -74,7 +74,7 @@ class TestBuilders(unittest.TestCase):
         self.assertIn("ShaderNodeTexNoise", kinds)       # grunge
         self.assertIn("ShaderNodeTexWave", kinds)        # scratches
 
-    def test_landmarks_resolve_to_root_local_metres(self):
+    def test_landmarks_resolve_to_root_local_meters(self):
         model = recipe()
         root, objects = build_recipe(model)
         lm = resolve_landmarks(model, root, objects)

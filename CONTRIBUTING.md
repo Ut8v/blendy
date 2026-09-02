@@ -41,7 +41,7 @@ way to extend the system.
 5. Write a headless test in `tests/blender/test_model.py` that asserts the
    geometry, not just that it built.
 
-Parameters should be quantities a person can reason about: metres, radians,
+Parameters should be quantities a person can reason about: meters, radians,
 counts. A builder whose parameters only make sense by trial and error is a
 builder an agent cannot use.
 

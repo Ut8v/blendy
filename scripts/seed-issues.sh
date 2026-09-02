@@ -6,7 +6,7 @@ command -v gh >/dev/null || { echo "needs the GitHub CLI: https://cli.github.com
 
 label() { gh label create "$1" --color "$2" --description "$3" 2>/dev/null || true; }
 label builder    0B5394 "A new shape or capability in the compiler"
-label agent      1F883D "Agent behaviour, skills or prompting"
+label agent      1F883D "Agent behavior, skills or prompting"
 label quality    8C4A2F "Output does not read the way it should"
 label unverified 7A6E5D "Written but never run against Blender"
 label studio     6F42C1 "The local UI"
@@ -48,7 +48,7 @@ new "Face detail is too subtle to read" "quality" \
 Either the strengths are too low or the falloff radii are too wide. Compare a bare head at `age` 0 and 1.5 to calibrate.'
 
 new "Armour detail: rivets, straps and lamellar rows" "builder" \
-'Surface detail is procedural noise only, so plate rows and rivets are implied rather than modelled. A row builder that instances a small form along a path would cover most cases and is cheap.'
+'Surface detail is procedural noise only, so plate rows and rivets are implied rather than modeled. A row builder that instances a small form along a path would cover most cases and is cheap.'
 
 new "Ingest pipeline has never been run" "unverified" \
 '`compiler/ingest.py` implements normalize, measure, classify, six orthographic views, socket raycasting and validation, and `server/ingest_driver.py` drives it. None of it has executed against a real asset.

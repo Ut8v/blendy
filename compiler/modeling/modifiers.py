@@ -137,7 +137,7 @@ def _cloth(obj: bpy.types.Object, m: dict[str, Any], name: str,
 
 
 def _pinned(obj: bpy.types.Object, m: dict[str, Any]) -> list[int]:
-    """Vertices held in place: a named side, or a normalised span on one axis."""
+    """Vertices held in place: a named side, or a normalized span on one axis."""
     region = m.get("pin_region")
     if region:
         idx = _AXIS[region["axis"]]

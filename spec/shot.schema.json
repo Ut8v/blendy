@@ -111,7 +111,7 @@
           "focal": {
             "type": "number",
             "exclusiveMinimum": 0,
-            "description": "Millimetres for PERSP. Orthographic scale in world units for ORTHO."
+            "description": "Millimeters for PERSP. Orthographic scale in world units for ORTHO."
           },
           "dof": {
             "oneOf": [

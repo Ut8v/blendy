@@ -84,7 +84,7 @@ def landmark_empty(ctx, ref: str) -> bpy.types.Object:
             empty.rotation_quaternion = n.normalized().to_track_quat("Z", "Y")
         # A socket sits on a possibly non-uniformly scaled asset. Cancel that scale
         # on the empty so anything anchored to it keeps its own spec scale and
-        # offsets are in metres, not in the parent's local units.
+        # offsets are in meters, not in the parent's local units.
         bpy.context.view_layer.update()
         ws = root.matrix_world.to_scale()
         empty.scale = Vector(tuple(1.0 / s if abs(s) > 1e-9 else 1.0 for s in ws))

@@ -165,7 +165,7 @@ def build_head(name: str, p: dict[str, Any], smooth: bool | None,
     return obj
 
 
-def _add_eyelids(bm, centre, r: float, lids: float) -> None:
+def _add_eyelids(bm, center, r: float, lids: float) -> None:
     """Lid shells hugging the eyeball.
 
     A push can raise a rim on the skull but never wrap forward over a sphere that
@@ -173,7 +173,7 @@ def _add_eyelids(bm, centre, r: float, lids: float) -> None:
     on a face. These are spherical bands at just over the eyeball's radius, so
     they cover it by construction whatever the skull does.
     """
-    cx, cy, cz = centre
+    cx, cy, cz = center
     R = r * (1.04 + 0.05 * lids)
     seg, rings = 24, 16
     grid = []

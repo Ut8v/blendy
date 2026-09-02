@@ -15,7 +15,7 @@
     "height": {
       "type": ["number", "null"],
       "exclusiveMinimum": 0,
-      "description": "Intended height in metres. The profile records the measured height; the validator flags drift."
+      "description": "Intended height in meters. The profile records the measured height; the validator flags drift."
     },
     "parts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/part"}},
     "materials": {
@@ -44,7 +44,7 @@
         "rotation_euler": {"$ref": "#/$defs/vec3"},
         "scale": {"$ref": "#/$defs/vec3"}
       },
-      "description": "Relative to the parent part, metres and radians."
+      "description": "Relative to the parent part, meters and radians."
     },
     "part": {
       "type": "object",
@@ -103,7 +103,7 @@
         "shape": {"enum": ["cube", "sphere", "cylinder", "cone", "torus", "plane"]},
         "size": {
           "$ref": "#/$defs/vec3",
-          "description": "Full dimensions in metres (torus: [major diameter, major diameter, minor diameter])."
+          "description": "Full dimensions in meters (torus: [major diameter, major diameter, minor diameter])."
         },
         "segments": {"type": "integer", "minimum": 3, "maximum": 128}
       }
@@ -125,7 +125,7 @@
               "position": {"$ref": "#/$defs/vec3"},
               "radius": {
                 "oneOf": [{"type": "number", "exclusiveMinimum": 0}, {"$ref": "#/$defs/vec2"}],
-                "description": "Metres; [rx, ry] for an oval cross-section."
+                "description": "Meters; [rx, ry] for an oval cross-section."
               },
               "loose": {"type": "boolean", "description": "Sharp end cap instead of a rounded one."}
             }
@@ -412,7 +412,7 @@
         "position": {"$ref": "#/$defs/vec3"},
         "size": {
           "$ref": "#/$defs/vec2",
-          "description": "[half-width, half-depth] of the cross-section, metres."
+          "description": "[half-width, half-depth] of the cross-section, meters."
         },
         "roundness": {
           "type": "number",
@@ -461,7 +461,7 @@
         "height": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "description": "Chin to crown, metres (adult ~0.235)."
+          "description": "Chin to crown, meters (adult ~0.235)."
         },
         "width": {"type": "number", "exclusiveMinimum": 0},
         "depth": {"type": "number", "exclusiveMinimum": 0},
@@ -542,7 +542,7 @@
           "description": "Only emit where the surface faces this way. Keeps scalp hair off the face."
         }
       },
-      "description": "A normalised span (0..1) along one local axis of the part."
+      "description": "A normalized span (0..1) along one local axis of the part."
     },
     "sheet_params": {
       "type": "object",
@@ -550,7 +550,7 @@
       "required": ["size"],
       "description": "A quad sheet hanging from z=0 to -height, width across X. Give it to the cloth modifier to drape.",
       "properties": {
-        "size": {"$ref": "#/$defs/vec2", "description": "[width, drop] in metres."},
+        "size": {"$ref": "#/$defs/vec2", "description": "[width, drop] in meters."},
         "resolution": {
           "type": "array",
           "items": {"type": "integer", "minimum": 2, "maximum": 80},

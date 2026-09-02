@@ -27,7 +27,7 @@ description: Building characters, props and sets as model recipes, against a ref
 - Its dials are `brow`, `socket`, `cheek`, `jaw`, `chin`, `temple`, `age`, `ears` and a
   `nose` block whose `length` is the forward projection (~0.028 m), not its height.
   Change `height`, `width` and `depth` first; a wrong skull is not fixable with dials.
-- Cloth is simulated, not modelled. Build a `sheet` (width, drop, `arc` degrees of
+- Cloth is simulated, not modeled. Build a `sheet` (width, drop, `arc` degrees of
   wrap so it starts curved round the body, `shape` to flare the hem) and give it a
   `cloth` modifier with `pin_region` at the top and `collide` naming the parts it
   falls onto. Bake at a frame in the twenties. A cloak made of solid parts always
@@ -37,18 +37,18 @@ description: Building characters, props and sets as model recipes, against a ref
   lay down instead of sticking out), `clump`, `curl`, `taper`, a `direction` bias to
   sweep it, and a `region` with `normal_bias` so scalp hair never emits on the face.
   Same `seed`, same hair, every build.
-- `push` sculpts by number: a centre, a radius and either a direction or a radial swell.
+- `push` sculpts by number: a center, a radius and either a direction or a radial swell.
   Feature radii must be small. A brow ridge is a 3 cm form; spread it over 8 cm and it
   disappears back into the skull.
 - Symmetry: build the left side and add a part with `mirror_of` for the right. Keep the
-  character centred on X, facing -Y, feet at z=0, and `height` set to the intended height.
+  character centered on X, facing -Y, feet at z=0, and `height` set to the intended height.
 - Every transform is relative to the parent. Parent limbs, armour and hair to the body
   part they attach to, so moving the body moves them.
 - Landmarks are named parts + anchors. A character must declare the core set (`eye_L`,
   `eye_R`, `eye_midpoint`, `ear_L/R`, `head_top`, `chin`, `neck`, `shoulder_L/R`,
   `hand_L/R`, `hip`, `foot_L/R`, `ground_contact`); use `joint:` anchors on the skin
   graph for joints and `center`/`top` on parts like eyes.
-- Materials are procedural: base colour, roughness, metallic, then `noise` for variation,
+- Materials are procedural: base color, roughness, metallic, then `noise` for variation,
   `grunge` for wear, `scratches` on metal, `bump` for skin and cloth. No textures exist.
 - Read `model_profile` after each preview: measured height and poly count. A model
   taller than declared by more than 5% is wrong, not "close". Keep characters under

@@ -128,7 +128,7 @@ def _world_bounds(obj: bpy.types.Object) -> tuple[Vector, Vector]:
 
 def resolve_landmarks(model: dict[str, Any], root: bpy.types.Object,
                       objects: dict[str, bpy.types.Object]) -> dict[str, dict[str, Any]]:
-    """Recipe landmarks -> socket entries in ROOT-local space (metres), so a shot
+    """Recipe landmarks -> socket entries in ROOT-local space (meters), so a shot
     can anchor to them and the model can be placed anywhere."""
     inv = root.matrix_world.inverted()
     out: dict[str, dict[str, Any]] = {}

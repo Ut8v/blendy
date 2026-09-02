@@ -1,7 +1,7 @@
 """Builder ops: recipe params -> a Blender object. bmesh where possible, so no
 operator context is needed. Every builder is deterministic for its params.
 
-Sizes are full dimensions in metres; the origin is the part's local origin.
+Sizes are full dimensions in meters; the origin is the part's local origin.
 """
 
 from __future__ import annotations

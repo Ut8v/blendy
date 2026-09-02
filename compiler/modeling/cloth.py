@@ -141,11 +141,12 @@ def build_hair(name: str, p: dict[str, Any], smooth: bool | None,
     length = p["length"]
     radius = p.get("radius", 0.004)
     segments = int(p.get("segments", 6))
-    sides = int(p.get("sides", 5))
+    sides = int(p.get("sides", 7))
     clump, gravity = p.get("clump", 0.4), p.get("gravity", 0.6)
     curl, sway = p.get("curl", 0.0), p.get("sway", 0.15)
     taper = p.get("taper", 0.25)
     bias = Vector(p.get("direction", (0, 0, 0)))
+    avoid = [(Vector(a["center"]), float(a["radius"])) for a in p.get("avoid", [])]
     rng = random.Random(int(p.get("seed", 0)))
 
     seeds = _emitter_samples(emitter, count, p.get("region"), rng)
@@ -171,6 +172,11 @@ def build_hair(name: str, p: dict[str, Any], smooth: bool | None,
             heading = normal * w + down * (1.0 - w) * (0.6 + gravity) + bias * 0.6
             pull = (target - pos) * clump * 0.30 * t
             wobble = side * (math.sin(phase + t * math.pi * (1 + curl * 3)) * sway * strand_len * 0.18)
+            for centre, radius in avoid:          # push the strand out of the face
+                away = pos - centre
+                if away.length < radius:
+                    pos = centre + (away.normalized() if away.length > 1e-6
+                                    else Vector((0, -1, 0))) * radius
             path.append({"position": pos.copy(),
                          "size": [r * (1 - taper * t), r * (1 - taper * t)], "roundness": 1.0})
             heading = (heading + pull)

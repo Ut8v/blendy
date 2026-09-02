@@ -18,7 +18,15 @@ MODEL_SCHEMA = SPEC_DIR / "model.schema.json"
 MODEL_VERSION = "1.0"
 _PARAM_SCHEMAS = {"primitive": "primitive_params", "skin": "skin_params", "revolve": "revolve_params",
                   "extrude": "extrude_params", "tube": "tube_params", "metaball": "metaball_params",
-                  "hair": "hair_params"}
+                  "hair": "hair_params", "loft": "loft_params", "head": "head_params",
+                  "hand": "hand_params"}
+# Named points each builder publishes, for `point:` landmark anchors.
+POINT_NAMES = {
+    "head": {"eye_l", "eye_r", "eye_midpoint", "ear_l", "ear_r", "chin", "head_top",
+             "nose_tip", "mouth", "jaw_l", "jaw_r", "neck", "brow"},
+    "hand": {"wrist", "palm", "knuckles", "fingertip", "thumb_tip"},
+    "loft": {"start", "end"},
+}
 _ANCHORS = {"center", "origin", "top", "bottom", "front", "back", "left", "right"}
 _HEAVY_OPS = {"metaball", "hair"}
 
@@ -83,6 +91,21 @@ def _semantic(m: dict[str, Any]) -> list[Issue]:
             add(Issue("error", "semantic", "unknown_material",
                       f"material '{p['material']}' is not defined (have: {', '.join(sorted(m['materials'])) or 'none'})",
                       pointer(base + ["material"]), pid))
+        at = p.get("at")
+        if at:
+            if at["part"] not in by_id:
+                add(Issue("error", "semantic", "unknown_ref", f"at.part '{at['part']}' is not a part",
+                          pointer(base + ["at"]), pid))
+            elif at["part"] == pid:
+                add(Issue("error", "semantic", "self_reference", "a part cannot be placed at itself",
+                          pointer(base + ["at"]), pid))
+            else:
+                src = by_id.get(by_id[at["part"]].get("mirror_of") or "", by_id[at["part"]])
+                have = POINT_NAMES.get(src["op"], set())
+                if at["point"] not in have:
+                    add(Issue("error", "semantic", "unknown_point",
+                              f"a {src['op']} part publishes no point '{at['point']}' "
+                              f"(have: {', '.join(sorted(have)) or 'none'})", pointer(base + ["at"]), pid))
         if p.get("mirror_of"):
             src = p["mirror_of"]
             if src not in by_id:
@@ -111,6 +134,16 @@ def _semantic(m: dict[str, Any]) -> list[Issue]:
         if "part" in lm:
             if lm["part"] not in by_id:
                 add(Issue("error", "semantic", "unknown_ref", f"landmark '{name}' names part '{lm['part']}' which does not exist", f"/landmarks/{name}"))
+            elif lm["anchor"].startswith("point:"):
+                part = by_id[lm["part"]]
+                src = by_id.get(part.get("mirror_of") or "", part)
+                have = POINT_NAMES.get(src["op"], set())
+                pname = lm["anchor"][6:]
+                if pname not in have:
+                    add(Issue("error", "semantic", "unknown_point",
+                              f"landmark '{name}': a {src['op']} part publishes no point '{pname}' "
+                              f"(have: {', '.join(sorted(have)) or 'none; only head, hand and loft publish points'})",
+                              f"/landmarks/{name}"))
             elif lm["anchor"].startswith("joint:"):
                 part = by_id[lm["part"]]
                 src = by_id.get(part.get("mirror_of") or "", part)
@@ -135,6 +168,7 @@ def _modifier_issues(mod, path, pid, by_id, add) -> None:
     t = mod["type"]
     need = {"subdivision": ["levels"], "bevel": ["width"], "mirror": ["axis"], "solidify": ["thickness"],
             "boolean": ["operation", "part"], "displace": ["strength"], "array": ["count", "offset"],
+            "push": ["center", "radius", "strength"],
             "shrinkwrap": ["part"], "smooth": ["factor"], "cloth": ["pin", "frame"], "decimate": ["ratio"]}
     for key in need.get(t, []):
         if key not in mod:

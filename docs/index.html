@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blendy — an agent harness for 3D animation in Blender</title>
+<meta name="description" content="Agents model, rig, animate, light and shoot in Blender by editing a declarative document. A deterministic compiler turns it into a scene. Nothing else writes to Blender.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wordmark">Blendy <span>3D animation, directed</span></div>
+  <nav>
+    <a href="#problem">Problem</a>
+    <a href="#loop">The loop</a>
+    <a href="#vocabulary">Vocabulary</a>
+    <a href="#limits">Limits</a>
+    <a href="https://github.com/Ut8v/blendy">Source</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="hero">
+  <div class="prose">
+    <h1>Agents that build in Blender without ever writing Blender code.</h1>
+    <p class="lede">
+      Blendy is a harness for producing 3D animation end to end. Agents model, rig,
+      texture, animate, light and shoot; a person directs. The only software involved
+      is Blender and the add-ons that ship with it, and the only outside input is a
+      reference image.
+    </p>
+    <p class="byline">Python 3.13 · Blender 5.1 · MIT licensed</p>
+  </div>
+</section>
+
+<section class="band" id="problem">
+  <div class="split">
+    <div class="prose">
+      <p class="eyebrow">The problem</p>
+      <h2>Generated <code>bpy</code> code fails quietly.</h2>
+      <p>
+        The obvious way to put a language model in a 3D package is to let it write
+        scripts. It does not work. The model cannot see what it made, so errors
+        compound invisibly; a script that half-executes leaves the scene in a state
+        nobody can reason about; and there is no way to roll back to the last thing
+        that was right.
+      </p>
+      <p>
+        Blendy replaces the script with a <strong>document</strong>. A shot is JSON.
+        A character is JSON. A deterministic compiler turns either into a Blender
+        scene, and nothing else is permitted to write to Blender at all. That single
+        constraint buys diffs, reproducibility, validation before execution, and one
+        place to look when something breaks.
+      </p>
+    </div>
+    <div class="prose">
+      <div class="note">
+        <p>
+          <strong>The agent has no code-execution tool</strong> and never will. Its only
+          route into the scene is editing the document and recompiling. When it needs a
+          capability that does not exist, that is a builder to add to the compiler, not
+          an escape hatch to open.
+        </p>
+      </div>
+      <pre>{
+  "id": "haldin", "kind": "character", "height": 1.82,
+  "parts": [
+    { "id": "torso", "op": "loft",
+      "params": { "path": [
+        { "position": [0, 0, 0.92], "size": [0.155, 0.105] },
+        { "position": [0, 0, 1.36], "size": [0.205, 0.118] }
+      ] } },
+    { "id": "head", "op": "head", "parent": "torso",
+      "params": { "brow": 0.9, "jaw": 0.8, "age": 0.95 } }
+  ]
+}</pre>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="loop">
+  <div class="prose">
+    <p class="eyebrow">The loop</p>
+    <h2>Edit, compile, look, revise.</h2>
+    <p>
+      Every mutation is followed by a render the agent reads back. It is not allowed
+      to batch five edits and hope. Validation runs outside Blender and is the
+      compiler's first step, so a bad document fails before the scene is touched, with
+      an error naming the offending entity rather than a traceback.
+    </p>
+  </div>
+
+  <div class="diagram" role="img" aria-label="Pipeline: document, validate, compile, render, look, then revise or checkpoint.">
+    <svg viewBox="0 0 1120 210" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0 0 L10 5 L0 10 z" fill="#9a968e"/>
+        </marker>
+      </defs>
+      <g fill="none" stroke="#9a968e" stroke-width="1.25" marker-end="url(#a)">
+        <path d="M172 60 H236"/><path d="M356 60 H420"/><path d="M540 60 H604"/><path d="M724 60 H788"/>
+        <path d="M908 60 H962"/>
+      </g>
+      <g stroke="#e4e1da" stroke-width="1.25" fill="#f4f2ee">
+        <rect x="12" y="34" width="160" height="52" rx="3"/>
+        <rect x="236" y="34" width="120" height="52" rx="3"/>
+        <rect x="420" y="34" width="120" height="52" rx="3"/>
+        <rect x="604" y="34" width="120" height="52" rx="3"/>
+        <rect x="788" y="34" width="120" height="52" rx="3"/>
+        <rect x="962" y="34" width="146" height="52" rx="3"/>
+      </g>
+      <g font-size="14" fill="#1a1917" text-anchor="middle">
+        <text x="92" y="65">Document</text><text x="296" y="65">Validate</text>
+        <text x="480" y="65">Compile</text><text x="664" y="65">Render</text>
+        <text x="848" y="65">Look</text><text x="1035" y="65">Checkpoint</text>
+      </g>
+      <g font-size="12" fill="#6b6862" text-anchor="middle">
+        <text x="92" y="108">JSON the agent edits</text>
+        <text x="296" y="108">outside Blender</text>
+        <text x="480" y="108">deterministic</text>
+        <text x="664" y="108">three fixed angles</text>
+        <text x="848" y="108">agent reads it back</text>
+        <text x="1035" y="108">.blend + snapshot</text>
+      </g>
+      <path d="M848 118 V172 H92 V92" fill="none" stroke="#8c4a2f" stroke-width="1.25"
+            stroke-dasharray="4 4" marker-end="url(#a)"/>
+      <text x="470" y="190" font-size="12" fill="#8c4a2f" text-anchor="middle">revise — one change at a time</text>
+    </svg>
+  </div>
+
+  <div class="prose wide" style="margin-top:44px">
+    <h3>What is enforced, not merely suggested</h3>
+    <ul class="plain">
+      <li><b>Determinism</b><span>The same document builds the same scene every time. A test builds twice and compares a fingerprint of the whole scene graph.</span></li>
+      <li><b>Totality</b><span>A build either completes or fails with a validation error. There is no partial state to debug.</span></li>
+      <li><b>Checkpoints</b><span>Every accepted step snapshots the document and the <code>.blend</code>. A bad step costs one step, never the session.</span></li>
+      <li><b>Landmarks</b><span>Positions can be written <code>@hero.eye_midpoint</code> and resolve at compile time. Reposition the character and the camera move follows.</span></li>
+      <li><b>Inheritance</b><span>Frame rate, lens set, casting and continuity live in a sequence bible. A shot that disagrees fails validation rather than quietly drifting.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band" id="vocabulary">
+  <div class="prose">
+    <p class="eyebrow">Vocabulary</p>
+    <h2>Shapes the compiler knows how to make.</h2>
+    <p>
+      An agent cannot invent geometry any more than it can invent a new letter. It
+      composes from builders, and each builder takes quantities a person can reason
+      about — metres, radians, counts — because parameters that only make sense by
+      trial and error are parameters an agent cannot use.
+    </p>
+  </div>
+
+  <div class="plates">
+    <figure>
+      <img src="images/head-builder.png" alt="A parametric head with brow ridge, eye sockets, cheekbones and jaw.">
+      <figcaption>The head builder. Front and back depth are independent, which is the difference between a skull and an egg.</figcaption>
+    </figure>
+    <figure>
+      <img src="images/haldin-three-quarter.png" alt="A character in layered armour with a cloak and a sword at the hip.">
+      <figcaption>Lofted body and armour, a cloth-simulated cloak, strand hair, all from one recipe.</figcaption>
+    </figure>
+    <figure>
+      <img src="images/haldin-head.png" alt="Close-up of the character's head showing lids, beard and hair.">
+      <figcaption>Eyelid shells are generated at just over the eyeball's radius, so they hood it whatever the skull does.</figcaption>
+    </figure>
+  </div>
+
+  <div class="prose wide" style="margin-top:46px">
+    <ul class="plain">
+      <li><b>loft</b><span>Cross-sections swept along a path into quad topology. Torsos, limbs, sleeves, boots.</span></li>
+      <li><b>head, hand</b><span>Parametric anatomy that publishes named points, so a recipe places an eye at <code>point:eye_l</code> rather than guessing a coordinate.</span></li>
+      <li><b>sheet</b><span>A quad sheet that can start wrapped around the body, then falls under simulation and bakes. A cloak that starts flat never drapes.</span></li>
+      <li><b>hair</b><span>Tapered strands grown off an emitter surface, turned by gravity within the first centimetres. Deterministic for a seed.</span></li>
+      <li><b>push</b><span>One sculpting primitive: a smooth displacement with a centre, a radius and a direction. Brows, sockets, wrinkles, dents.</span></li>
+      <li><b>revolve, extrude, tube, skin</b><span>Turned forms, plates and straps, ropes and cables, and quick rough volumes.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band" id="direction">
+  <div class="split">
+    <div class="prose">
+      <p class="eyebrow">Direction</p>
+      <h2>The human is the director, not the operator.</h2>
+      <p>
+        Work happens in a local studio: a conversation on the left, turntables and
+        previews in the middle, and the shot or model being inspected on the right.
+        Long runs survive a page reload, and a live activity feed shows which tool is
+        running and for how long.
+      </p>
+      <p>
+        Camera work is authored by hand when taste is faster to demonstrate than to
+        describe. Moves are recorded in a browser viewport and stored relative to
+        landmarks, so they survive re-blocking, re-timing and recasting.
+      </p>
+      <h3>Gates that do not move</h3>
+      <p>
+        A person approves the bible, reads every line of the shot breakdown, and lands
+        every skill edit. A separate agent reviews renders with no access to the
+        reasoning that produced them, because an agent that just built something
+        judges it against what it meant to do rather than what is on screen.
+      </p>
+    </div>
+    <figure>
+      <img src="images/haldin-front.png" alt="Front view of the finished character.">
+      <figcaption>
+        Built across five checkpointed stages — body, armour, cloak, hair, props and
+        materials — each one a separate agent turn against the reference.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band" id="limits">
+  <div class="prose">
+    <p class="eyebrow">Limits</p>
+    <h2>What this does not do.</h2>
+    <p>
+      A model iterating against renders reaches a stylised, recognisable character. It
+      does not reach the concept painting, and the last twenty percent is not a
+      prompting problem.
+    </p>
+    <ul>
+      <li><strong>No photoreal likeness.</strong> Faces read as stylised. Fine facial detail and skin realism are out of reach.</li>
+      <li><strong>No outside software or services.</strong> No mesh generators, no mocap vendors, no marketplace rigs. Blender and its bundled add-ons only.</li>
+      <li><strong>No hand-sculpting.</strong> Every capability is a builder the compiler owns and the schema names. There is no brush.</li>
+      <li><strong>Retargeted and procedural motion is the ceiling</strong> for performance. Nuanced acting is not in scope.</li>
+      <li><strong>Detail is procedural.</strong> Wear, grunge and scratches are noise fields, so rivets and stitching are implied rather than modelled.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="band" id="start">
+  <div class="split">
+    <div class="prose">
+      <p class="eyebrow">Getting started</p>
+      <h2>Run it locally.</h2>
+      <p>
+        Blender 5.1 or later must be installed. The agent side drives the Claude Code
+        CLI, so it runs on whatever account is already signed in there.
+      </p>
+      <pre>git clone https://github.com/Ut8v/blendy
+cd blendy
+python3 -m venv .venv
+./.venv/bin/pip install fastjsonschema mcp numpy
+
+tests/run_all.sh            # unit tests, no Blender
+tests/run_all.sh --blender  # plus the compiler suites
+
+./.venv/bin/python -m server.studio</pre>
+      <p>
+        The studio opens on <code>127.0.0.1:8765</code>. Point a model recipe's
+        <code>reference</code> field at your own image under
+        <code>assets/references/</code>.
+      </p>
+    </div>
+    <div class="prose">
+      <h3>Reading the code</h3>
+      <ul class="plain">
+        <li><b>spec/</b><span>JSON Schema for shots, models, the bible and the breakdown. Start here; everything depends on it.</span></li>
+        <li><b>compiler/</b><span>Validation, and the builders and resolvers that run inside Blender.</span></li>
+        <li><b>server/</b><span>The MCP tool surface, the studio, the database and the learning loop.</span></li>
+        <li><b>models/</b><span>Model recipes. One document per character, prop or set.</span></li>
+        <li><b>tests/blender/</b><span>Headless tests against real Blender. Nothing here mocks <code>bpy</code>.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <span>Blendy</span>
+  <a href="https://github.com/Ut8v/blendy">Source</a>
+  <a href="https://github.com/Ut8v/blendy/blob/main/CONTRIBUTING.md">Contributing</a>
+  <a href="https://github.com/Ut8v/blendy/blob/main/LICENSE">MIT</a>
+  <span style="margin-left:auto">Renders on this page are generated by the pipeline.</span>
+</footer>
+
+</body>
+</html>

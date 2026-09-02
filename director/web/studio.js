@@ -11,7 +11,9 @@ export const api = {
 };
 
 export const studio = { shot: null, overview: null, info: null, director: null, chat: null,
-  select: id => selectShot(id), refresh: () => refreshShot(), overviewRefresh: () => refreshOverview() };
+  models: null, modelDetail: null, activeTab: 'previews',
+  select: id => selectShot(id), refresh: () => refreshShot(), overviewRefresh: () => refreshOverview(),
+  renderInspector: mode => renderPanel(studio, api, mode) };
 
 export async function refreshOverview() {
   studio.overview = await api.get('/api/overview');
@@ -19,8 +21,10 @@ export async function refreshOverview() {
   const current = studio.shot || studio.overview.studio.shot || (studio.overview.shots[0] || {}).id;
   sel.innerHTML = studio.overview.shots.map(s => `<option value="${s.id}">${s.id} · ${s.kind} · ${s.render_state}</option>`).join('');
   if (current) sel.value = current;
-  $('claudeStatus').textContent = studio.overview.claude ? 'claude: ready (subscription)' : 'claude: CLI not found';
-  if (current && current !== studio.shot) await selectShot(current); else renderPanel(studio, api);
+  const st = $('claudeStatus');
+  st.className = 'status ' + (studio.overview.claude ? 'ok' : 'bad');
+  st.querySelector('span').textContent = studio.overview.claude ? 'Claude ready' : 'Claude CLI not found';
+  if (current && current !== studio.shot) await selectShot(current); else renderPanel(studio, api, studio.activeTab === 'models' ? 'model' : 'shot');
 }
 
 export async function selectShot(id) {
@@ -29,12 +33,15 @@ export async function selectShot(id) {
   try {
     studio.info = await api.get('/api/shot?id=' + encodeURIComponent(id));
     const v = studio.info.valid;
-    $('shotState').textContent = v.ok ? `valid${v.warnings.length ? ` · ${v.warnings.length} warnings` : ''}` : `${v.errors.length} validation errors`;
-    $('shotState').style.color = v.ok ? '' : 'var(--bad)';
+    const el = $('shotState');
+    el.textContent = v.ok ? (v.warnings.length ? `${v.warnings.length} warnings` : 'valid') : `${v.errors.length} errors`;
+    el.className = 'badge ' + (v.ok ? (v.warnings.length ? 'badge-warn' : 'badge-ok') : 'badge-bad');
   } catch (e) {
-    studio.info = null; $('shotState').textContent = e.message;
+    studio.info = null;
+    $('shotState').textContent = 'unavailable';
+    $('shotState').className = 'badge badge-bad';
   }
-  renderPanel(studio, api);
+  renderPanel(studio, api, studio.activeTab === 'models' ? 'model' : 'shot');
   renderPreviews(studio);
   renderRenders(studio);
   if (studio.director) studio.director.load(studio.info);
@@ -65,8 +72,10 @@ export function lightbox(src) {
 function wire() {
   $('shotSelect').addEventListener('change', e => selectShot(e.target.value));
   document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => {
+    studio.activeTab = b.dataset.tab;
     document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('active', x === b));
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + b.dataset.tab));
+    renderPanel(studio, api, b.dataset.tab === 'models' ? 'model' : 'shot');
     try {
       if (b.dataset.tab === 'models' && studio.models) studio.models.refresh();
       if (b.dataset.tab === 'director' && !studio.director) {
@@ -79,11 +88,13 @@ function wire() {
   document.querySelectorAll('[data-action]').forEach(b => b.addEventListener('click', () => runAction(b.dataset.action, b.dataset.args ? JSON.parse(b.dataset.args) : {})));
   document.addEventListener('click', e => { if (e.target.matches('img[data-full]')) lightbox(e.target.dataset.full); });
   $('resetChat').addEventListener('click', async () => { await api.post('/api/chat/reset'); studio.chat.reset(); });
+  $('send').addEventListener('click', () => studio.chat.submit($('input').value));
 }
 
 wire();
 studio.chat = new Chat($('messages'), $('composer'), $('input'), $('send'), $('stop'), $('turnStatus'), $('quick'), studio, refreshShot);
 studio.models = mountModels(api, studio);
 studio.models.refresh().catch(e => console.error('models', e));
+studio.chat.attach();
 refreshOverview();
 setInterval(() => { if (!studio.chat.busy) refreshOverview(); }, 15000);

@@ -3,92 +3,124 @@
 <head>
 <meta charset="utf-8">
 <title>Blendy Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="studio.css">
 </head>
 <body>
-<header>
-  <strong>Blendy Studio</strong>
-  <select id="shotSelect" title="working shot"></select>
-  <span id="shotState" class="muted"></span>
-  <span class="grow"></span>
-  <span id="claudeStatus" class="muted">claude: …</span>
-  <button id="resetChat" class="ghost" title="start a new conversation">new conversation</button>
+<header class="topbar">
+  <div class="brand"><span class="logo">B</span> Blendy Studio</div>
+  <div class="sep-v"></div>
+  <label class="field">
+    <span class="field-label">Shot</span>
+    <select id="shotSelect" class="select"></select>
+  </label>
+  <span id="shotState" class="badge badge-muted">—</span>
+  <div class="spacer"></div>
+  <span id="claudeStatus" class="status"><i class="dot"></i><span>connecting</span></span>
+  <button id="resetChat" class="btn btn-ghost btn-sm">New conversation</button>
 </header>
 
 <main>
-  <section id="chat">
-    <div id="messages"></div>
-    <div id="quick">
-      <button data-q="Modeling pass: read the model recipe I name (or the shot's model assets), preview_model, compare every view against the reference image, then patch the recipe in small steps and preview again. Keep going until the silhouette, proportions and colours read as the reference.">model</button>
-      <button data-q="Open {shot} and give me a blocking pass: place the location and cast at the bible marks, then preview.">block</button>
-      <button data-q="Animation pass on {shot}: choose clips from list_clips, sequence them on the NLA, preview first/middle/last frame.">animate</button>
-      <button data-q="Camera pass on {shot}: if there are takes, apply the latest; otherwise use a camera preset or author a landmark move. Preview.">camera</button>
-      <button data-q="Lighting pass on {shot} within the look's lighting preset. Lookdev preview.">light</button>
-      <button data-q="Review {shot}: look at the latest previews against the breakdown beat and write incidents for anything wrong. Do not fix.">review</button>
+  <!-- conversation -->
+  <section class="pane">
+    <div class="pane-head">
+      <h2>Conversation</h2>
+      <div class="spacer"></div>
+      <span id="turnStatus" class="mono-xs muted"></span>
     </div>
-    <form id="composer">
-      <textarea id="input" rows="3" placeholder="Talk to the pipeline. Shift+Enter for a newline."></textarea>
-      <div class="row">
-        <span id="turnStatus" class="muted"></span>
-        <span class="grow"></span>
-        <button type="button" id="stop" class="ghost" hidden>stop</button>
-        <button type="submit" id="send">send</button>
+    <div id="messages" class="scroll messages"></div>
+    <div class="composer">
+      <div id="quick" class="chips">
+        <button data-q="Modeling pass on the model I name: preview_model, compare every view against the reference, then patch the recipe in small steps and preview again. Keep going until the silhouette, proportions and colours read as the reference.">Model</button>
+        <button data-q="Open {shot} and give me a blocking pass: place the location and cast at the bible marks, then preview.">Block</button>
+        <button data-q="Animation pass on {shot}: choose clips, sequence them on the NLA, preview first, middle and last frame.">Animate</button>
+        <button data-q="Camera pass on {shot}: if there are takes, apply the latest; otherwise use a camera preset or author a landmark move. Preview.">Camera</button>
+        <button data-q="Lighting pass on {shot} within the look's lighting preset. Lookdev preview.">Light</button>
+        <button data-q="Review {shot}: look at the latest previews against the breakdown beat and write incidents for anything wrong. Do not fix.">Review</button>
       </div>
-    </form>
+      <textarea id="input" rows="3" placeholder="Talk to the pipeline…"></textarea>
+      <div class="composer-actions">
+        <span class="hint">Enter sends · Shift+Enter for a newline</span>
+        <div class="spacer"></div>
+        <button type="button" id="stop" class="btn btn-ghost btn-sm" hidden>Stop</button>
+        <button type="button" id="send" class="btn btn-primary btn-sm">Send</button>
+      </div>
+    </div>
+    <form id="composer" hidden></form>
   </section>
 
-  <section id="center">
-    <nav id="tabs">
-      <button data-tab="previews" class="active">previews</button>
-      <button data-tab="models">models</button>
-      <button data-tab="director">director</button>
-      <button data-tab="renders">renders</button>
-    </nav>
+  <!-- work area -->
+  <section class="pane">
+    <div class="pane-head">
+      <nav id="tabs" class="tabs">
+        <button data-tab="previews" class="active">Previews</button>
+        <button data-tab="models">Models</button>
+        <button data-tab="director">Director</button>
+        <button data-tab="renders">Renders</button>
+      </nav>
+    </div>
+
     <div id="tab-previews" class="tab active">
       <div class="toolbar">
-        <button data-action="render_preview" data-args='{"quality":"fast"}'>preview · fast</button>
-        <button data-action="render_preview" data-args='{"quality":"lookdev"}'>preview · lookdev</button>
-        <button data-action="validate">validate</button>
-        <span class="grow"></span>
-        <span id="actionStatus" class="muted"></span>
+        <button class="btn btn-sm" data-action="render_preview" data-args='{"quality":"fast"}'>Preview · fast</button>
+        <button class="btn btn-sm" data-action="render_preview" data-args='{"quality":"lookdev"}'>Preview · lookdev</button>
+        <button class="btn btn-sm btn-ghost" data-action="validate">Validate</button>
+        <div class="spacer"></div>
+        <span id="actionStatus" class="mono-xs muted"></span>
       </div>
-      <div id="latest" class="latest"></div>
-      <div id="history" class="history"></div>
+      <div class="scroll pad">
+        <div id="latest" class="grid grid-3"></div>
+        <h3 class="group-label" id="historyLabel" hidden>Earlier</h3>
+        <div id="history" class="grid grid-auto"></div>
+      </div>
     </div>
+
     <div id="tab-models" class="tab">
       <div class="toolbar">
-        <strong id="modelTitle">—</strong>
-        <select id="modelQuality"><option value="lookdev">lookdev</option><option value="fast">fast</option></select>
-        <button id="modelBuild" class="primary">build turntable</button>
-        <button id="modelReload" class="ghost">refresh</button>
-        <span id="modelStatus" class="muted"></span>
+        <strong id="modelTitle" class="mono">—</strong>
+        <div class="spacer"></div>
+        <select id="modelQuality" class="select select-sm">
+          <option value="lookdev">lookdev</option><option value="fast">fast</option>
+        </select>
+        <button id="modelBuild" class="btn btn-primary btn-sm">Build turntable</button>
+        <button id="modelReload" class="btn btn-ghost btn-sm">Refresh</button>
+        <span id="modelStatus" class="mono-xs muted"></span>
       </div>
       <div class="models-split">
-        <div id="modelList" class="model-list"></div>
-        <div id="modelViews" class="model-views"></div>
+        <div id="modelList" class="scroll model-list"></div>
+        <div id="modelViews" class="scroll pad grid grid-auto-lg"></div>
       </div>
     </div>
+
     <div id="tab-director" class="tab">
       <div class="toolbar">
-        <button data-action="export_proxy">export proxy</button>
-        <span id="directorStatus" class="muted"></span>
+        <button class="btn btn-sm" data-action="export_proxy">Export proxy</button>
+        <div class="spacer"></div>
+        <span id="directorStatus" class="mono-xs muted"></span>
       </div>
       <div id="director-view"></div>
       <div id="frame"></div>
     </div>
+
     <div id="tab-renders" class="tab">
-      <div class="toolbar"><span id="renderSummary" class="muted"></span></div>
-      <div id="renderFrames" class="history"></div>
+      <div class="toolbar"><span id="renderSummary" class="mono-xs muted"></span></div>
+      <div id="renderFrames" class="scroll pad grid grid-auto"></div>
     </div>
   </section>
 
-  <aside id="panel"></aside>
+  <!-- inspector -->
+  <aside class="pane">
+    <div class="pane-head"><h2 id="inspectorTitle">Shot</h2></div>
+    <div id="panel" class="scroll pad-sm"></div>
+  </aside>
 </main>
 
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
 </script>
-<script type="module" src="studio.js?v=6"></script>
+<script type="module" src="studio.js"></script>
 </body>
 </html>

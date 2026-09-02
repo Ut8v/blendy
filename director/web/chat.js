@@ -1,5 +1,7 @@
 // Chat with Claude Code, streamed over SSE from /api/chat. Tool calls render as
 // collapsible chips; any preview/render image a tool returns shows inline.
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
 export class Chat {
   constructor(list, form, input, send, stop, status, quick, studio, onTurnEnd) {
     Object.assign(this, { list, form, input, send, stop, status, quick, studio, onTurnEnd, busy: false, tools: {} });
@@ -7,7 +9,7 @@ export class Chat {
     input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.submit(input.value); } });
     stop.addEventListener('click', () => fetch('/api/chat/stop', { method: 'POST' }));
     quick.querySelectorAll('button').forEach(b => b.addEventListener('click', () => this.submit(b.dataset.q.replace('{shot}', studio.shot || 'the current shot'))));
-    this.add('assistant', 'Studio ready. Pick a shot, then talk to the pipeline or use the quick actions. I stop at every human gate.');
+    this.add('note', 'Pick a shot or a model, then talk to the pipeline. Every human gate stops for you.');
   }
 
   add(kind, text) {
@@ -18,24 +20,40 @@ export class Chat {
 
   scroll() { this.list.scrollTop = this.list.scrollHeight; }
 
-  reset() { this.list.innerHTML = ''; this.add('assistant', 'New conversation.'); }
+  reset() { this.list.innerHTML = ''; this.add('note', 'New conversation.'); }
 
   toolChip(ev) {
     const d = document.createElement('details');
     d.className = 'tool'; d.dataset.id = ev.id;
-    const args = JSON.stringify(ev.input || {});
-    d.innerHTML = `<summary><b>${ev.name.replace('mcp__blendy__', '')}</b> <span>${args.length > 90 ? args.slice(0, 90) + '…' : args}</span></summary><pre></pre><div class="thumbs"></div>`;
+    const input = ev.input || {};
+    const brief = Object.entries(input).map(([k, v]) => {
+      const s = typeof v === 'string' ? v : JSON.stringify(v);
+      return `${k}=${s.length > 28 ? s.slice(0, 28) + '…' : s}`;
+    }).join(' ');
+    d.innerHTML = `<summary><i class="state"></i><b>${esc(ev.name.replace('mcp__blendy__', ''))}</b>
+      <span class="arg">${esc(brief)}</span></summary><pre></pre><div class="thumbs"></div>`;
     this.tools[ev.id] = d; this.list.appendChild(d); this.scroll();
   }
 
   toolResult(ev) {
     const d = this.tools[ev.tool_use_id]; if (!d) return;
     d.querySelector('pre').textContent = ev.text;
-    if (ev.is_error) d.classList.add('err');
+    d.classList.add(ev.is_error ? 'err' : 'done');
     const thumbs = d.querySelector('.thumbs');
     (ev.images || []).forEach(p => { const img = document.createElement('img'); img.src = '/files/' + p; img.dataset.full = '/files/' + p; thumbs.appendChild(img); });
     if (ev.images && ev.images.length) { d.open = true; this.onTurnEnd(); }
     this.scroll();
+  }
+
+  async attach() {
+    // a turn started before this page load is still running: replay it
+    const st = await fetch('/api/chat/state').then(r => r.json()).catch(() => null);
+    if (!st || !st.running) return;
+    this.add('note', 'Re-attached to a turn already in progress.');
+    this.setBusy(true);
+    await this.consume(fetch('/api/chat/attach', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 0 }) }));
+    this.setBusy(false);
+    this.onTurnEnd();
   }
 
   async submit(text) {
@@ -44,10 +62,16 @@ export class Chat {
     this.input.value = '';
     this.add('user', text);
     this.setBusy(true);
+    await this.consume(fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, shot: this.studio.shot }) }));
+    this.setBusy(false);
+    this.onTurnEnd();
+  }
+
+  async consume(promise) {
     let current = null;
     try {
-      const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, shot: this.studio.shot }) });
-      if (!r.ok) { this.add('error', (await r.json()).error || r.statusText); return; }
+      const r = await promise;
+      if (!r.ok) { this.add('error', (await r.json().catch(() => ({}))).error || r.statusText); return; }
       const reader = r.body.getReader(); const dec = new TextDecoder(); let buf = '';
       while (true) {
         const { value, done } = await reader.read(); if (done) break;
@@ -67,7 +91,6 @@ export class Chat {
         }
       }
     } catch (e) { this.add('error', e.message); }
-    finally { this.setBusy(false); this.onTurnEnd(); }
   }
 
   setBusy(b) { this.busy = b; this.send.disabled = b; this.stop.hidden = !b; if (!b) this.status.textContent = ''; }

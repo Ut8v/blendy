@@ -19,13 +19,15 @@ MODEL_VERSION = "1.0"
 _PARAM_SCHEMAS = {"primitive": "primitive_params", "skin": "skin_params", "revolve": "revolve_params",
                   "extrude": "extrude_params", "tube": "tube_params", "metaball": "metaball_params",
                   "hair": "hair_params", "loft": "loft_params", "head": "head_params",
-                  "hand": "hand_params"}
+                  "hand": "hand_params", "sheet": "sheet_params"}
 # Named points each builder publishes, for `point:` landmark anchors.
 POINT_NAMES = {
     "head": {"eye_l", "eye_r", "eye_midpoint", "ear_l", "ear_r", "chin", "head_top",
              "nose_tip", "mouth", "jaw_l", "jaw_r", "neck", "brow"},
     "hand": {"wrist", "palm", "knuckles", "fingertip", "thumb_tip"},
     "loft": {"start", "end"},
+    "sheet": {"top_center", "bottom_center", "top_left", "top_right"},
+    "hair": {"root"},
 }
 _ANCHORS = {"center", "origin", "top", "bottom", "front", "back", "left", "right"}
 _HEAVY_OPS = {"metaball", "hair"}
@@ -114,6 +116,18 @@ def _semantic(m: dict[str, Any]) -> list[Issue]:
                 add(Issue("error", "semantic", "bad_mirror", "mirror_of must name a part built from params", pointer(base + ["mirror_of"]), pid))
         for j, mod in enumerate(p["modifiers"]):
             _modifier_issues(mod, pointer(base + ["modifiers", j]), pid, by_id, add)
+        if p["op"] == "hair" and not p.get("mirror_of"):
+            em = p["params"].get("emitter")
+            if em not in by_id:
+                add(Issue("error", "semantic", "unknown_ref", f"hair emitter '{em}' is not a part",
+                          pointer(base + ["params", "emitter"]), pid))
+            elif em == pid:
+                add(Issue("error", "semantic", "self_reference", "hair cannot grow from itself",
+                          pointer(base + ["params", "emitter"]), pid))
+            elif p["parent"] != em:
+                add(Issue("error", "semantic", "hair_parent",
+                          f"a hair part must be parented to its emitter ('{em}'), because strands are "
+                          "built in the emitter's local space", pointer(base + ["parent"]), pid))
         if p["op"] == "skin" and not p.get("mirror_of"):
             _skin_issues(p["params"], pointer(base + ["params"]), pid, add)
         if p["op"] == "revolve" and not p.get("mirror_of"):
@@ -166,13 +180,22 @@ def _semantic(m: dict[str, Any]) -> list[Issue]:
 
 def _modifier_issues(mod, path, pid, by_id, add) -> None:
     t = mod["type"]
+    if t == "cloth" and not (mod.get("pin") or mod.get("pin_region")):
+        add(Issue("error", "semantic", "modifier_param",
+                  "cloth needs 'pin' (a side) or 'pin_region' (a span), or the sheet falls away", path, pid))
     need = {"subdivision": ["levels"], "bevel": ["width"], "mirror": ["axis"], "solidify": ["thickness"],
             "boolean": ["operation", "part"], "displace": ["strength"], "array": ["count", "offset"],
             "push": ["center", "radius", "strength"],
-            "shrinkwrap": ["part"], "smooth": ["factor"], "cloth": ["pin", "frame"], "decimate": ["ratio"]}
+            "shrinkwrap": ["part"], "smooth": ["factor"], "cloth": ["frame"], "decimate": ["ratio"]}
     for key in need.get(t, []):
         if key not in mod:
             add(Issue("error", "semantic", "modifier_param", f"{t} modifier needs '{key}'", path, pid))
+    for ref in mod.get("collide", []):
+        if ref not in by_id:
+            add(Issue("error", "semantic", "unknown_ref", f"cloth collides with '{ref}', which is not a part",
+                      path, pid))
+        elif ref == pid:
+            add(Issue("error", "semantic", "self_reference", "a sheet cannot collide with itself", path, pid))
     if "part" in mod:
         if mod["part"] not in by_id:
             add(Issue("error", "semantic", "unknown_ref", f"{t} modifier targets part '{mod['part']}' which does not exist", path, pid))

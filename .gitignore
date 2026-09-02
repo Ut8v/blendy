@@ -27,3 +27,6 @@ __pycache__/
 /director/studio_state.json
 /renders/*.mp4
 /renders/*.gif
+
+# Reference images are the author's own input and are not redistributed.
+/assets/references/

@@ -113,6 +113,34 @@ def build_head(name: str, p: dict[str, Any], smooth: bool | None,
     push(verts, (0, face_y * 0.88, 0.215 * h), 0.07 * w, (0, 1, 0), 0.022 * s)         # mouth line
     push(verts, (0, face_y * 0.82, 0.135 * h), 0.13 * w, (0, 1, 0), 0.020 * s)         # under the lip
     push(verts, (0, hd * 1.02, 0.640 * h), 0.34 * w, (0, 1, 0), 0.022 * s)             # occiput
+
+    # Eyelids. Without a rim standing proud of the socket the eyeball reads as a
+    # ball stuck on a face, which is the single loudest tell of an unfinished head.
+    lids = p.get("lids", 1.0)
+    socket_y = face_y * 0.95 + 0.115 * s * socket
+    for sx in (1, -1):
+        eye = (sx * 0.31 * w, socket_y, 0.525 * h)
+        # The lid must come forward past the socket floor, otherwise it is just a
+        # shallower dish and the eyeball still sits on the surface.
+        push(verts, (eye[0], eye[1], eye[2] + 0.031 * h), 0.078 * w, (0, -1, -0.30), 0.135 * s * lids)
+        push(verts, (eye[0], eye[1], eye[2] - 0.021 * h), 0.075 * w, (0, -1, 0.35), 0.095 * s * lids)
+        push(verts, (eye[0], eye[1] + 0.006 * s, eye[2] + 0.052 * h), 0.065 * w, (0, 1, 0), 0.030 * s * lids)
+        push(verts, (sx * 0.44 * w, face_y * 0.86, 0.545 * h), 0.055 * w, (0, 1, 0), 0.016 * s * age)
+
+    # Age. A seventy-year-old is furrows and folds, not smooth skin.
+    if age > 0:
+        push(verts, (0, face_y * 0.99, 0.700 * h), 0.20 * w, (0, 1, 0), 0.028 * s * age)
+        push(verts, (0, face_y * 0.99, 0.760 * h), 0.18 * w, (0, 1, 0), 0.024 * s * age)
+        for sx in (1, -1):
+            push(verts, (sx * 0.055 * w, face_y * 0.98, 0.625 * h), 0.040 * w, (0, 1, 0), 0.038 * s * age)
+            push(verts, (sx * 0.19 * w, face_y * 0.84, 0.285 * h), 0.065 * w, (0, 1, 0), 0.050 * s * age)
+            push(verts, (sx * 0.45 * w, face_y * 0.64, 0.515 * h), 0.048 * w, (0, 1, 0), 0.030 * s * age)
+    eye_r = p.get("eye_radius", 0.012) * (w / 0.155)
+    if lids > 0 and eye_r > 0:
+        for sx in (1, -1):
+            _add_eyelids(bm, (sx * 0.31 * w, face_y * 0.95 + 0.138 * s * socket, 0.525 * h),
+                         eye_r, lids)
+
     spec = p.get("nose", {})
     nose = spec or {}
     if spec is not None and nose.get("length", 0.028) > 0:
@@ -123,9 +151,9 @@ def build_head(name: str, p: dict[str, Any], smooth: bool | None,
     obj = bpy.data.objects.new(name, finish(name, bm, True if smooth is None else smooth))
     brow_y = face_y - 0.075 * s * brow
     obj["blendy_points"] = {
-        "eye_l": [0.31 * w, face_y * 0.95 + 0.115 * s * socket, 0.525 * h],
-        "eye_r": [-0.31 * w, face_y * 0.95 + 0.115 * s * socket, 0.525 * h],
-        "eye_midpoint": [0.0, face_y * 0.95 + 0.115 * s * socket, 0.525 * h],
+        "eye_l": [0.31 * w, face_y * 0.95 + 0.138 * s * socket, 0.525 * h],
+        "eye_r": [-0.31 * w, face_y * 0.95 + 0.138 * s * socket, 0.525 * h],
+        "eye_midpoint": [0.0, face_y * 0.95 + 0.138 * s * socket, 0.525 * h],
         "ear_l": [0.46 * w, 0.05 * hd, 0.482 * h], "ear_r": [-0.46 * w, 0.05 * hd, 0.482 * h],
         "chin": [0.0, face_y * 0.86 - 0.070 * s * chin, 0.070 * h],
         "head_top": [0.0, 0.0, h], "nose_tip": [0.0, face_y - nose.get("length", 0.028) * (w / 0.155), 0.378 * h],
@@ -135,6 +163,54 @@ def build_head(name: str, p: dict[str, Any], smooth: bool | None,
         "neck": [0.0, 0.0, 0.0], "brow": [0.0, brow_y, 0.650 * h],
     }
     return obj
+
+
+def _add_eyelids(bm, centre, r: float, lids: float) -> None:
+    """Lid shells hugging the eyeball.
+
+    A push can raise a rim on the skull but never wrap forward over a sphere that
+    protrudes from it, which is why a pushed-only eye still reads as a ball stuck
+    on a face. These are spherical bands at just over the eyeball's radius, so
+    they cover it by construction whatever the skull does.
+    """
+    cx, cy, cz = centre
+    R = r * (1.04 + 0.05 * lids)
+    seg, rings = 24, 16
+    grid = []
+    for i in range(rings + 1):
+        phi = -math.pi / 2 + math.pi * i / rings
+        row = []
+        for j in range(seg):
+            th = 2 * math.pi * j / seg
+            row.append(bm.verts.new((cx + R * math.cos(phi) * math.sin(th),
+                                     cy - R * math.cos(phi) * math.cos(th),
+                                     cz + R * math.sin(phi))))
+        grid.append(row)
+    # Upper lid hoods the eye; the lower lid is a thinner rim beneath it. Both are
+    # cut to the front arc so nothing pokes out of the side of the head.
+    bands = ((0.16 - 0.12 * lids, 1.30), (-0.95, -0.30 + 0.06 * lids))
+    used = set()
+    for i in range(rings):
+        phi_a = -math.pi / 2 + math.pi * i / rings
+        phi_b = -math.pi / 2 + math.pi * (i + 1) / rings
+        mid_phi = (phi_a + phi_b) / 2
+        if not any(lo <= mid_phi <= hi for lo, hi in bands):
+            continue
+        for j in range(seg):
+            th = 2 * math.pi * (j + 0.5) / seg
+            front = math.cos(th)
+            if front < 0.30:
+                continue
+            quad = [grid[i][j], grid[i][(j + 1) % seg], grid[i + 1][(j + 1) % seg], grid[i + 1][j]]
+            try:
+                bm.faces.new(quad)
+                used.update(quad)
+            except ValueError:
+                pass
+    for row in grid:
+        for v in row:
+            if v not in used:
+                bm.verts.remove(v)
 
 
 def _add_nose(bm, nose: dict[str, Any], h: float, w: float, hd: float, segments: int) -> None:

@@ -45,7 +45,8 @@ def _skull(t: float) -> tuple[float, float, float, float]:
 
 # --- loft ---------------------------------------------------------------------------
 
-def build_loft(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_loft(name: str, p: dict[str, Any], smooth: bool | None,
+                   objects=None) -> bpy.types.Object:
     """A path of cross-sections. Torsos, necks, sleeves, boots, limbs, straps."""
     stations = [{"position": s["position"], "size": s["size"],
                  "roundness": s.get("roundness", 1.0), "twist": s.get("twist", 0.0)}
@@ -67,7 +68,8 @@ def build_loft(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.O
 
 # --- head ------------------------------------------------------------------------------
 
-def build_head(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_head(name: str, p: dict[str, Any], smooth: bool | None,
+                   objects=None) -> bpy.types.Object:
     h = p.get("height", 0.235)
     w = p.get("width", 0.155)
     d = p.get("depth", 0.205)
@@ -169,7 +171,8 @@ def _add_ears(bm, size: float, h: float, w: float, hd: float, segments: int) -> 
 
 # --- hand ---------------------------------------------------------------------------------
 
-def build_hand(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_hand(name: str, p: dict[str, Any], smooth: bool | None,
+                   objects=None) -> bpy.types.Object:
     """Wrist at the origin, fingers along +Z, palm facing -Y. `side` mirrors the thumb."""
     length = p.get("length", 0.19)
     width = p.get("width", 0.088)

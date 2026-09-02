@@ -70,7 +70,7 @@ def apply_modifiers(obj: bpy.types.Object, mods: list[dict[str, Any]],
         elif t == "push":
             _push(obj, m)
         elif t == "cloth":
-            _cloth(obj, m, name)
+            _cloth(obj, m, name, objects, frame_end)
         else:
             raise RuntimeError(f"unknown modifier type {t!r}")
 
@@ -93,33 +93,62 @@ def _push(obj: bpy.types.Object, m: dict[str, Any]) -> None:
     obj.data.update()
 
 
-def _cloth(obj: bpy.types.Object, m: dict[str, Any], name: str) -> None:
-    """Pin one edge of the mesh, simulate, and freeze at a frame. Deterministic
-    for fixed settings and cache. Milestone 23 refines this."""
-    side, frame = m["pin"], int(m["frame"])
-    axis = {"top": (2, 1), "bottom": (2, -1), "left": (0, -1), "right": (0, 1),
-            "front": (1, -1), "back": (1, 1)}[side]
-    coords = [v.co[axis[0]] for v in obj.data.vertices]
-    extreme = max(coords) if axis[1] > 0 else min(coords)
-    span = (max(coords) - min(coords)) or 1.0
-    group = obj.vertex_groups.new(name="pin")
-    pinned = [v.index for v in obj.data.vertices if abs(v.co[axis[0]] - extreme) < 0.06 * span]
-    group.add(pinned, 1.0, "REPLACE")
-    mod = obj.modifiers.new(name, "CLOTH")
-    mod.settings.vertex_group_mass = "pin"
-    mod.settings.quality = 6
-    mod.settings.mass = 0.3
-    mod.settings.tension_stiffness = mod.settings.compression_stiffness = m.get("stiffness", 15.0)
-    mod.settings.bending_stiffness = 0.5
-    mod.settings.air_damping = 1.0
-    mod.point_cache.frame_start, mod.point_cache.frame_end = 1, frame
+def _cloth(obj: bpy.types.Object, m: dict[str, Any], name: str,
+           objects: dict[str, bpy.types.Object], frame_end: int) -> None:
+    """Pin part of the sheet, let it fall onto the colliders, freeze at a frame.
+
+    Deterministic for fixed settings: the same recipe bakes the same drape.
+    """
+    frame = int(m["frame"])
     scene = bpy.context.scene
+    group = obj.vertex_groups.new(name="pin")
+    group.add(_pinned(obj, m), 1.0, "REPLACE")
+
+    for part in m.get("collide", []):
+        collider = objects[part]
+        if not any(mod.type == "COLLISION" for mod in collider.modifiers):
+            collider.modifiers.new("collision", "COLLISION")
+            collider.collision.thickness_outer = m.get("clearance", 0.008)
+
+    mod = obj.modifiers.new(name, "CLOTH")
+    st = mod.settings
+    st.vertex_group_mass = "pin"
+    st.quality = int(m.get("quality", 8))
+    st.mass = m.get("mass", 0.25)
+    st.tension_stiffness = st.compression_stiffness = m.get("stiffness", 12.0)
+    st.shear_stiffness = m.get("stiffness", 12.0) * 0.5
+    st.bending_stiffness = m.get("bending", 0.4)
+    st.air_damping = 1.2
+    if m.get("collide"):
+        mod.collision_settings.use_collision = True
+        mod.collision_settings.distance_min = m.get("clearance", 0.008)
+        mod.collision_settings.use_self_collision = bool(m.get("self_collision", False))
+    mod.point_cache.frame_start, mod.point_cache.frame_end = 1, max(frame, 2)
+
     for f in range(1, frame + 1):
         scene.frame_set(f)
     depsgraph = bpy.context.evaluated_depsgraph_get()
     baked = bpy.data.meshes.new_from_object(obj.evaluated_get(depsgraph))
-    old = obj.data
+    old_mesh = obj.data
     obj.modifiers.remove(mod)
     obj.data = baked
-    bpy.data.meshes.remove(old)
+    bpy.data.meshes.remove(old_mesh)
     scene.frame_set(1)
+
+
+def _pinned(obj: bpy.types.Object, m: dict[str, Any]) -> list[int]:
+    """Vertices held in place: a named side, or a normalised span on one axis."""
+    region = m.get("pin_region")
+    if region:
+        idx = _AXIS[region["axis"]]
+        vals = [v.co[idx] for v in obj.data.vertices]
+        lo, hi = min(vals), max(vals)
+        span = (hi - lo) or 1.0
+        r0, r1 = region.get("min", 0.0), region.get("max", 1.0)
+        return [v.index for v in obj.data.vertices if r0 <= (v.co[idx] - lo) / span <= r1]
+    axis, sign = {"top": (2, 1), "bottom": (2, -1), "left": (0, -1), "right": (0, 1),
+                  "front": (1, -1), "back": (1, 1)}[m["pin"]]
+    coords = [v.co[axis] for v in obj.data.vertices]
+    extreme = max(coords) if sign > 0 else min(coords)
+    span = (max(coords) - min(coords)) or 1.0
+    return [v.index for v in obj.data.vertices if abs(v.co[axis] - extreme) < 0.06 * span]

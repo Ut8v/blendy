@@ -25,7 +25,8 @@ def _mesh_object(name: str, bm: bmesh.types.BMesh, smooth: bool) -> bpy.types.Ob
 
 # --- primitive -----------------------------------------------------------------------
 
-def build_primitive(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_primitive(name: str, p: dict[str, Any], smooth: bool | None,
+                               objects=None) -> bpy.types.Object:
     shape, size = p["shape"], Vector(p["size"])
     seg = int(p.get("segments", 32))
     bm = bmesh.new()
@@ -67,7 +68,8 @@ def _torus(bm, major: float, minor: float, seg_major: int, seg_minor: int) -> No
 
 # --- skin: joint graph -> Skin modifier ------------------------------------------------
 
-def build_skin(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_skin(name: str, p: dict[str, Any], smooth: bool | None,
+                          objects=None) -> bpy.types.Object:
     """Vertices at joints, edges between them; the Skin modifier wraps them with
     the per-joint radius and Subdivision smooths the result. Bodies and limbs."""
     joints, edges = p["joints"], p["edges"]
@@ -99,7 +101,8 @@ def build_skin(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.O
 
 # --- revolve: profile lathed around Z -----------------------------------------------
 
-def build_revolve(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_revolve(name: str, p: dict[str, Any], smooth: bool | None,
+                             objects=None) -> bpy.types.Object:
     profile, seg, cap = p["profile"], int(p.get("segments", 32)), p.get("cap", True)
     bm = bmesh.new()
     rings = []
@@ -134,7 +137,8 @@ def build_revolve(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.type
 
 # --- extrude: outline pushed along Z -------------------------------------------------
 
-def build_extrude(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_extrude(name: str, p: dict[str, Any], smooth: bool | None,
+                             objects=None) -> bpy.types.Object:
     outline, depth, taper = p["outline"], p["depth"], p.get("taper", 1.0)
     bm = bmesh.new()
     bottom = [bm.verts.new((x, y, 0.0)) for x, y in outline]
@@ -150,7 +154,8 @@ def build_extrude(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.type
 
 # --- tube: polyline / bezier with radius -------------------------------------------
 
-def build_tube(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_tube(name: str, p: dict[str, Any], smooth: bool | None,
+                          objects=None) -> bpy.types.Object:
     """A curve object with bevel; converted to mesh so modifiers and landmarks
     behave like every other part."""
     pts, radius = p["points"], p["radius"]
@@ -188,7 +193,8 @@ def build_tube(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.O
 
 # --- metaball ------------------------------------------------------------------------
 
-def build_metaball(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
+def build_metaball(name: str, p: dict[str, Any], smooth: bool | None,
+                              objects=None) -> bpy.types.Object:
     mb = bpy.data.metaballs.new(name)
     mb.resolution = p.get("resolution", 0.05)
     mb.render_resolution = mb.resolution
@@ -219,15 +225,13 @@ def metaball_to_mesh(obj: bpy.types.Object) -> bpy.types.Object:
     return new
 
 
-def build_hair(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.Object:
-    raise RuntimeError("hair builder lands with milestone 23; use tube bundles for strands meanwhile")
-
-
-from .anatomy import build_hand, build_head, build_loft   # noqa: E402  (circular-safe: anatomy imports loft only)
+from .anatomy import build_hand, build_head, build_loft   # noqa: E402
+from .cloth import build_hair, build_sheet                 # noqa: E402
 
 BUILDERS = {"primitive": build_primitive, "skin": build_skin, "revolve": build_revolve,
             "extrude": build_extrude, "tube": build_tube, "metaball": build_metaball,
-            "hair": build_hair, "loft": build_loft, "head": build_head, "hand": build_hand}
+            "loft": build_loft, "head": build_head, "hand": build_hand,
+            "sheet": build_sheet, "hair": build_hair}
 
 
 def mirror_x(obj: bpy.types.Object, name: str) -> bpy.types.Object:

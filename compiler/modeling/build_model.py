@@ -77,7 +77,7 @@ def instantiate(model: dict[str, Any], prefix: str, link) -> tuple[bpy.types.Obj
         if part.get("mirror_of"):
             obj = mirror_x(objects[part["mirror_of"]], name)
         else:
-            obj = BUILDERS[part["op"]](name, part["params"], part.get("smooth"))
+            obj = BUILDERS[part["op"]](name, part["params"], part.get("smooth"), objects)
         link(obj)
         if obj.type == "META":
             frozen = metaball_to_mesh(obj)

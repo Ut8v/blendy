@@ -62,11 +62,57 @@ h3 { font-size: 20px; margin: 2.2em 0 0.5em; }
 .band { padding: 92px 0; border-top: 1px solid var(--rule); }
 .band:first-of-type { border-top: 0; }
 .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: start; }
-@media (max-width: 900px) {
-  main { padding: 0 22px 80px; }
-  .masthead { padding: 16px 22px; gap: 16px; }
-  .masthead nav { gap: 16px; }
-  .split { grid-template-columns: 1fr; gap: 36px; }
+@media (max-width: 1000px) {
+  .split { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+}
+
+@media (max-width: 760px) {
+  body { font-size: 17px; }
+  main { padding: 0 20px 64px; }
+  .band { padding: 56px 0; }
+  .hero { padding: 44px 0 40px; }
+  h1 { font-size: clamp(31px, 8.2vw, 42px); }
+  h2 { font-size: 25px; }
+  .lede { font-size: 18.5px; }
+  .prose, .prose.wide { max-width: none; }
+
+  /* The masthead becomes a title plus a scrollable rail of links. */
+  .masthead {
+    display: block; padding: 12px 20px 0; position: static;
+    backdrop-filter: none; background: var(--paper);
+  }
+  .masthead nav {
+    margin: 10px -20px 0; padding: 0 20px 10px; gap: 20px;
+    overflow-x: auto; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .masthead nav::-webkit-scrollbar { display: none; }
+  .masthead a { white-space: nowrap; }
+
+  pre { padding: 14px; font-size: 12.5px; border-radius: 3px; }
+  .note { padding: 16px 18px; }
+  footer { padding: 28px 20px; gap: 16px; }
+  footer span:last-child { margin-left: 0 !important; flex-basis: 100%; }
+
+  /* The pipeline diagram is far too wide to shrink; let it scroll instead. */
+  .diagram { overflow-x: auto; margin-left: -20px; margin-right: -20px; padding: 0 20px; }
+  .diagram svg { min-width: 720px; }
+  /* A cut-off diagram gives no sign it can be dragged, so say so. */
+  .diagram-wrap::after {
+    content: "Scroll sideways to see the whole loop";
+    display: block; margin-top: 8px;
+    font: 400 13px var(--sans); color: var(--faint);
+  }
+}
+
+@media (max-width: 460px) {
+  main { padding: 0 16px 56px; }
+  .masthead { padding: 12px 16px 0; }
+  /* Full-bleed children have to match the narrower gutter or they overhang. */
+  .masthead nav { margin: 10px -16px 0; padding: 0 16px 10px; }
+  .diagram { margin-left: -16px; margin-right: -16px; padding: 0 16px; }
+  .wordmark span { display: none; }
+  h1 { font-size: clamp(28px, 8.6vw, 34px); }
 }
 
 /* ---- hero ---- */
@@ -85,12 +131,13 @@ figcaption {
   margin-top: 10px; font: 400 13.5px/1.5 var(--sans); color: var(--muted);
   max-width: 46ch;
 }
-.plates { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 34px; }
-@media (max-width: 760px) { .plates { grid-template-columns: 1fr; } }
+.plates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; margin-top: 34px; }
+@media (max-width: 980px) { .plates { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .plates { grid-template-columns: minmax(0, 1fr); gap: 26px; } }
 
 /* ---- code ---- */
 pre {
-  margin: 1.4em 0; padding: 18px 20px; overflow-x: auto;
+  margin: 1.4em 0; padding: 18px 20px; overflow-x: auto; -webkit-overflow-scrolling: touch;
   background: var(--panel); border: 1px solid var(--rule); border-radius: 3px;
   font: 400 13.5px/1.7 var(--mono); color: #2c2a26;
 }
@@ -106,10 +153,11 @@ li::marker { color: var(--faint); }
   padding: 15px 0; border-top: 1px solid var(--rule);
   display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 22px;
 }
+.plain span { overflow-wrap: anywhere; }
 .plain li:last-child { border-bottom: 1px solid var(--rule); }
 .plain b { font: 500 14px var(--sans); letter-spacing: -0.01em; }
 .plain span { color: var(--muted); font-size: 16.5px; line-height: 1.5; }
-@media (max-width: 620px) { .plain li { grid-template-columns: 1fr; gap: 4px; } }
+@media (max-width: 680px) { .plain li { grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 13px 0; } }
 
 /* ---- diagram ---- */
 .diagram { margin: 8px 0 0; }

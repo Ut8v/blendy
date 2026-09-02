@@ -107,6 +107,50 @@ class TestApi(StudioBase):
         self.assertEqual(json.loads(body)["takes"][0]["id"], take_id)
 
 
+class TestActivity(StudioBase):
+    def test_activity_is_empty_when_nothing_runs(self):
+        d = json.loads(self.get("/api/activity")[1])
+        self.assertIn("turn", d)
+        self.assertIn("jobs", d)
+        self.assertIsNone(d["current"])
+
+    def test_slow_actions_return_a_job_and_finish(self):
+        code, body = self.post("/api/action", {"shot": "blockout_example", "action": "render_preview",
+                                               "args": {"quality": "fast"}})
+        self.assertEqual(code, 200)
+        job_id = json.loads(body)["job"]
+        for _ in range(400):
+            listing = json.loads(self.get("/api/jobs")[1])
+            job = next(j for j in listing if j["id"] == job_id)
+            if not job["running"]:
+                break
+            time.sleep(0.05)
+        self.assertFalse(job["running"], "the render job never finished")
+        self.assertEqual(job["kind"], "render_preview")
+        self.assertGreaterEqual(job["seconds"], 0)
+
+    def test_fast_actions_still_answer_inline(self):
+        code, body = self.post("/api/action", {"shot": "blockout_example", "action": "validate"})
+        self.assertEqual(code, 200)
+        self.assertNotIn("job", json.loads(body))
+
+    def test_tool_calls_appear_in_the_timeline(self):
+        self.post("/api/chat/reset")
+        req = urllib.request.Request(f"http://127.0.0.1:{self.port}/api/chat", method="POST",
+                                     data=json.dumps({"message": "go", "shot": "blockout_example"}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req).close()
+        for _ in range(200):
+            if not json.loads(self.get("/api/chat/state")[1])["running"]:
+                break
+            time.sleep(0.05)
+        d = json.loads(self.get("/api/activity")[1])
+        names = [t["name"] for t in d["tools"]]
+        self.assertIn("render_preview", names)
+        done = [t for t in d["tools"] if t["ended"] is not None]
+        self.assertTrue(done and done[0]["ok"])
+
+
 class TestChat(StudioBase):
     def setUp(self):
         self.wait_idle()

@@ -11,6 +11,7 @@ import argparse
 import json
 import mimetypes
 import os
+import re
 import sys
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -24,10 +25,11 @@ if str(ROOT) not in sys.path:
 from compiler.validate import load_json                            # noqa: E402
 from server import claude_runner, director                          # noqa: E402
 from server.state import get_state                                  # noqa: E402
-from server.tools import director_tools, sequence_tools, spec_tools  # noqa: E402
+from server.tools import director_tools, model_tools, sequence_tools, spec_tools  # noqa: E402
 
 WEB = ROOT / "director" / "web"
-SERVABLE = ("preview", "renders", "director/proxies", "evals/results", "evals/references")
+SERVABLE = ("preview", "renders", "director/proxies", "evals/results", "evals/references",
+            "assets/references")
 _turn_lock = threading.Lock()
 _current_turn: claude_runner.ClaudeTurn | None = None
 
@@ -44,6 +46,23 @@ def _shots() -> list[dict]:
                     "frames": spec["meta"]["frame_end"] - spec["meta"]["frame_start"] + 1,
                     "render_state": st.get("render_state", "pending"),
                     "frames_done": st.get("frames_done", 0)})
+    return out
+
+
+def _models() -> list[dict]:
+    out = []
+    for m in model_tools.list_models():
+        d = ROOT / "preview" / "models" / m["id"]
+        files = sorted(d.glob("*.png")) if d.exists() else []
+        m["previews"] = [{"view": f.stem, "path": f"preview/models/{m['id']}/{f.name}",
+                          "mtime": f.stat().st_mtime} for f in files]
+        m["reference"] = None
+        try:
+            ref = model_tools.read_model(m["id"]).get("reference")
+            m["reference"] = ref if ref and (ROOT / ref).exists() else None
+        except Exception:  # noqa: BLE001
+            pass
+        out.append(m)
     return out
 
 
@@ -103,6 +122,11 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(WEB), **kw)
 
+    def end_headers(self):
+        # the UI is edited live; never let the browser cache a stale bundle
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        super().end_headers()
+
     def log_message(self, *a):
         pass
 
@@ -126,11 +150,33 @@ class Handler(SimpleHTTPRequestHandler):
 
     # --- GET ---------------------------------------------------------------------
 
+    def _serve_index(self) -> None:
+        """Stamp asset URLs with their mtime. Module and stylesheet caching is
+        otherwise impossible to shake during development."""
+        html = (WEB / "index.html").read_text(encoding="utf-8")
+        def stamp(m):
+            f = WEB / m.group(1)
+            v = int(f.stat().st_mtime) if f.exists() else 0
+            return f'{m.group(1)}?v={v}'
+        html = re.sub(r'(studio\.(?:js|css)|models\.js|chat\.js|panels\.js|director\.js)(?:\?v=\d+)?', stamp, html)
+        body = html.encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         url = urlparse(self.path)
+        if url.path in ("/", "/index.html"):
+            return self._serve_index()
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
         if url.path == "/api/overview":
             return self._safe(_overview)
+        if url.path == "/api/models":
+            return self._safe(_models)
+        if url.path == "/api/model":
+            return self._safe(lambda: model_tools.read_model(q["id"]))
         if url.path == "/api/shot":
             return self._safe(lambda: _shot_info(q["id"]))
         if url.path.startswith("/files/"):
@@ -208,10 +254,15 @@ class Handler(SimpleHTTPRequestHandler):
         "promote_take": lambda a: director_tools.promote_take(a["take_id"], a["name"], a.get("description", ""),
                                                              a.get("shot_types", []), a.get("register")),
         "validate": lambda a: spec_tools.validate_spec(),
+        "preview_model": lambda a: model_tools.preview_model(a["model"], a.get("views"),
+                                                             a.get("quality", "lookdev")),
+        "validate_model": lambda a: model_tools.validate_model_tool(a["model"]),
+        "checkpoint_model": lambda a: model_tools.checkpoint_model(a["model"], a["label"]),
     }
 
     def _action(self, b: dict) -> dict:
-        get_state().open(b["shot"])          # disk is the truth; the MCP process may have changed it
+        if b.get("shot"):
+            get_state().open(b["shot"])      # disk is the truth; the MCP process may have changed it
         fn = self.ACTIONS.get(b.get("action"))
         if fn is None:
             raise KeyError(f"unknown action {b.get('action')!r}")

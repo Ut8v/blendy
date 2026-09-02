@@ -41,14 +41,15 @@
         "jaw": 0.8,
         "chin": 0.7,
         "temple": 0.4,
-        "age": 0.8,
+        "age": 0.9,
         "ears": 1.0,
         "nose": {
           "length": 0.028,
           "width": 0.036,
           "bridge": 0.7,
           "hook": 0.4
-        }
+        },
+        "lids": 1.0
       }
     },
     {

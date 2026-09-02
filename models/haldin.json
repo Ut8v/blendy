@@ -254,7 +254,9 @@
           "width": 0.034,
           "bridge": 0.85,
           "hook": 0.2
-        }
+        },
+        "lids": 1.0,
+        "eye_radius": 0.0115
       }
     },
     {
@@ -2365,7 +2367,7 @@
         "length": 0.46,
         "radius": 0.0035,
         "segments": 12,
-        "sides": 5,
+        "sides": 7,
         "clump": 0.72,
         "gravity": 2,
         "curl": 0.08,
@@ -2378,7 +2380,7 @@
         ],
         "region": {
           "axis": "z",
-          "min": 0.45,
+          "min": 0.56,
           "max": 0.97,
           "normal_bias": {
             "direction": [
@@ -2386,7 +2388,7 @@
               0.5,
               0.86
             ],
-            "min_dot": 0.22
+            "min_dot": 0.46
           }
         },
         "seed": 3
@@ -2421,7 +2423,7 @@
         "length": 0.185,
         "radius": 0.003,
         "segments": 8,
-        "sides": 5,
+        "sides": 7,
         "clump": 0.95,
         "gravity": 2,
         "curl": 0.4,

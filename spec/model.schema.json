@@ -59,11 +59,12 @@
             "loft",
             "head",
             "hand",
+            "sheet",
+            "hair",
             "revolve",
             "extrude",
             "tube",
-            "metaball",
-            "hair"
+            "metaball"
           ]
         },
         "params": {"type": "object"},
@@ -220,20 +221,22 @@
     "hair_params": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["count", "length"],
+      "required": ["emitter", "count", "length"],
+      "description": "Tapered strands grown off an emitter part's surface. The part must be parented to its emitter. Deterministic per seed.",
       "properties": {
-        "count": {"type": "integer", "minimum": 1, "maximum": 20000},
+        "emitter": {"$ref": "#/$defs/id"},
+        "count": {"type": "integer", "minimum": 1, "maximum": 4000},
         "length": {"type": "number", "exclusiveMinimum": 0},
         "radius": {"type": "number", "exclusiveMinimum": 0},
+        "segments": {"type": "integer", "minimum": 2, "maximum": 24},
+        "sides": {"type": "integer", "minimum": 3, "maximum": 12},
         "clump": {"type": "number", "minimum": 0, "maximum": 1},
-        "gravity": {"type": "number", "minimum": 0, "maximum": 1},
-        "curl": {"type": "number", "minimum": 0},
-        "region": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {"axis": {"enum": ["x", "y", "z"]}, "min": {"type": "number"}, "max": {"type": "number"}},
-          "description": "Grow only where the emitter's local coordinate on axis is within [min, max]."
-        },
+        "gravity": {"type": "number", "minimum": 0, "maximum": 2},
+        "curl": {"type": "number", "minimum": 0, "maximum": 4},
+        "sway": {"type": "number", "minimum": 0, "maximum": 2},
+        "taper": {"type": "number", "minimum": 0, "maximum": 1},
+        "direction": {"$ref": "#/$defs/vec3"},
+        "region": {"$ref": "#/$defs/region"},
         "seed": {"type": "integer"}
       }
     },
@@ -280,7 +283,18 @@
         "center": {"$ref": "#/$defs/vec3"},
         "radius": {"type": "number", "exclusiveMinimum": 0},
         "direction": {"$ref": "#/$defs/vec3"},
-        "falloff": {"enum": ["smooth", "linear"]}
+        "falloff": {"enum": ["smooth", "linear"]},
+        "collide": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/id"},
+          "description": "cloth: parts the sheet falls onto."
+        },
+        "pin_region": {"$ref": "#/$defs/region", "description": "cloth: which vertices are held."},
+        "clearance": {"type": "number", "exclusiveMinimum": 0},
+        "quality": {"type": "integer", "minimum": 1, "maximum": 20},
+        "mass": {"type": "number", "exclusiveMinimum": 0},
+        "bending": {"type": "number", "minimum": 0},
+        "self_collision": {"type": "boolean"}
       },
       "additionalProperties": false
     },
@@ -478,6 +492,60 @@
         "thumb": {"type": "number", "minimum": 0, "maximum": 2},
         "side": {"enum": ["l", "r"]},
         "segments": {"type": "integer", "minimum": 6, "maximum": 48}
+      }
+    },
+    "curve_table": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/vec2"},
+      "description": "[t, value] pairs, t from 0 at the top to 1 at the bottom."
+    },
+    "region": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["axis"],
+      "properties": {
+        "axis": {"enum": ["x", "y", "z"]},
+        "min": {"type": "number", "minimum": 0, "maximum": 1},
+        "max": {"type": "number", "minimum": 0, "maximum": 1},
+        "normal_bias": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["direction"],
+          "properties": {
+            "direction": {"$ref": "#/$defs/vec3"},
+            "min_dot": {"type": "number", "minimum": -1, "maximum": 1}
+          },
+          "description": "Only emit where the surface faces this way. Keeps scalp hair off the face."
+        }
+      },
+      "description": "A normalised span (0..1) along one local axis of the part."
+    },
+    "sheet_params": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["size"],
+      "description": "A quad sheet hanging from z=0 to -height, width across X. Give it to the cloth modifier to drape.",
+      "properties": {
+        "size": {"$ref": "#/$defs/vec2", "description": "[width, drop] in metres."},
+        "resolution": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 2, "maximum": 80},
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "shape": {"$ref": "#/$defs/curve_table", "description": "Width scale down the drop."},
+        "curve": {"$ref": "#/$defs/curve_table", "description": "Y offset down the drop, to wrap a body."},
+        "wrap": {
+          "type": "number",
+          "description": "Extra Y at the side edges, so it folds round instead of clipping."
+        },
+        "slack": {"type": "number", "minimum": 0, "description": "Spare fabric for the solver to fold."},
+        "arc": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 300,
+          "description": "Degrees of wrap around Z before simulating. A cloak starts curved round the shoulders, not flat."
+        }
       }
     }
   }

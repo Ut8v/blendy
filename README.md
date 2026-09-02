@@ -1,9 +1,19 @@
 # Blendy
 
-An agent harness for producing 3D animation in Blender, end to end. Agents model,
-rig, texture, animate, light and shoot; a person directs. The only software
-involved is Blender and the add-ons that ship with it, and the only outside input
-is a reference image.
+**An experiment: can an agent make 3D animation, if you build a strict enough
+harness around it?**
+
+A language model cannot see what it makes, cannot sculpt, and writes 3D code that
+fails quietly. This is an attempt to find out how far it gets anyway when
+everything it does has to go through a document, a validator and a render it is
+made to look at. Agents model, rig, texture, animate, light and shoot in Blender;
+a person directs. The only software involved is Blender and the add-ons that ship
+with it, and the only outside input is a reference image.
+
+> **Work in progress, and nowhere near a conclusion.** Characters come out
+> stylised rather than convincing. Rigging and posing are not built. Several
+> layers have only ever run in their own tests. Nothing here claims the question
+> is answered.
 
 **[Read the overview →](https://ut8v.github.io/blendy/)**
 

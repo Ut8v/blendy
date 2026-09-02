@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Blendy — an agent harness for 3D animation in Blender</title>
-<meta name="description" content="Agents model, rig, animate, light and shoot in Blender by editing a declarative document. A deterministic compiler turns it into a scene. Nothing else writes to Blender.">
+<title>Blendy — can agents make 3D animation? An experiment.</title>
+<meta name="description" content="An experiment: can agents produce usable 3D animation in Blender if you build a strict enough harness around them? Work in progress, not a conclusion.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
@@ -13,7 +13,7 @@
 <body>
 
 <header class="masthead">
-  <div class="wordmark">Blendy <span>3D animation, directed</span></div>
+  <div class="wordmark">Blendy <span>an experiment in progress</span></div>
   <nav>
     <a href="#problem">Problem</a>
     <a href="#loop">The loop</a>
@@ -27,13 +27,30 @@
 
 <section class="hero">
   <div class="prose">
-    <h1>Agents that build in Blender without ever writing Blender code.</h1>
+    <p class="eyebrow">An experiment</p>
+    <h1>Can an agent make 3D animation, if you build a strict enough harness around it?</h1>
     <p class="lede">
-      Blendy is a harness for producing 3D animation end to end. Agents model, rig,
-      texture, animate, light and shoot; a person directs. The only software involved
-      is Blender and the add-ons that ship with it, and the only outside input is a
-      reference image.
+      That question is the whole reason this exists. A language model cannot see what
+      it makes, cannot sculpt, and writes 3D code that fails quietly. Blendy is an
+      attempt to find out how far it can get anyway when everything it does has to go
+      through a document, a validator and a render it is made to look at.
     </p>
+    <p>
+      Agents model, rig, texture, animate, light and shoot in Blender; a person
+      directs. The only software involved is Blender and the add-ons that ship with
+      it, and the only outside input is a reference image.
+    </p>
+
+    <div class="note">
+      <p>
+        <strong>This is a work in progress and nowhere near a conclusion.</strong>
+        Characters come out stylised rather than convincing. Rigging and posing are not
+        built. Several layers have only ever run in their own tests. Everything below
+        describes how it works and where it currently falls down — none of it is a claim
+        that the question has been answered.
+      </p>
+    </div>
+
     <p class="byline">Python 3.13 · Blender 5.1 · MIT licensed</p>
   </div>
 </section>

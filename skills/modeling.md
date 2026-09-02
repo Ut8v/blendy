@@ -13,9 +13,23 @@ description: Building characters, props and sets as model recipes, against a ref
   proportions against the reference, then secondary forms (armour, cloak, hair as `tube`
   bundles), then materials, then detail (bevel, displace, grunge). Detail on a wrong
   silhouette is wasted.
-- `skin` is the workhorse for anything organic: a joint graph with radii. Bodies are one
-  skin part from hips to head with limbs branching; fingers are their own small skins.
-  Use `[rx, ry]` radii for flattened sections (chest, hands). Subdivision 2 is the default.
+- Pick the builder that matches the form. `loft` is the workhorse for bodies, limbs,
+  necks, sleeves and boots: a path of cross-sections with a half-width, half-depth and
+  a roundness (1.0 ellipse, 1.3 torso, 1.5 rounded box). It gives clean quads that
+  subdivide and deform, which `skin` does not. `head` and `hand` are parametric: tune
+  their dials, never rebuild them from blobs. `revolve` for anything turned, `extrude`
+  for plates and straps, `tube` for ropes and hair, `metaball` only for fused organic
+  masses. `skin` remains useful for quick rough volumes.
+- `head` publishes a face vocabulary as points: `eye_l`, `eye_r`, `eye_midpoint`,
+  `ear_l/r`, `chin`, `head_top`, `nose_tip`, `mouth`, `jaw_l/r`, `neck`, `brow`. Place
+  eyeballs, brows, hair and helmets with `at: {part, point, offset}` rather than by
+  guessing coordinates, and anchor landmarks with `point:<name>`.
+- Its dials are `brow`, `socket`, `cheek`, `jaw`, `chin`, `temple`, `age`, `ears` and a
+  `nose` block whose `length` is the forward projection (~0.028 m), not its height.
+  Change `height`, `width` and `depth` first; a wrong skull is not fixable with dials.
+- `push` sculpts by number: a centre, a radius and either a direction or a radial swell.
+  Feature radii must be small. A brow ridge is a 3 cm form; spread it over 8 cm and it
+  disappears back into the skull.
 - Symmetry: build the left side and add a part with `mirror_of` for the right. Keep the
   character centred on X, facing -Y, feet at z=0, and `height` set to the intended height.
 - Every transform is relative to the parent. Parent limbs, armour and hair to the body

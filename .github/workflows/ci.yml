@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Validators, tests and repo rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The hygiene suite reads git history and the tracked file list.
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          # Matches the interpreter bundled with Blender 5.1, so the validator
+          # cannot pass here and fail inside the compiler.
+          python-version: "3.13"
+
+      - name: Install
+        run: pip install fastjsonschema mcp numpy
+
+      - name: Repo rules
+        # Runs first: a contribution that leaks a private file or bypasses the
+        # document layer should fail before anyone reads the test output.
+        run: python -m unittest tests.test_repo_hygiene -v
+
+      - name: Unit tests
+        run: python -m unittest discover -s tests -t .
+
+      - name: Example specs validate
+        # Model recipes are validated by the repo-rules job above.
+        run: python compiler/validate.py spec/scenes/*.json
+
+  # The compiler suite needs a real Blender and is deliberately not mocked, so
+  # it runs on request rather than on every push.
+  blender:
+    name: Headless Blender suite
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender
+        run: |
+          sudo snap install blender --classic
+          blender --version
+      - name: Compiler and model suites
+        run: tests/blender/run.sh

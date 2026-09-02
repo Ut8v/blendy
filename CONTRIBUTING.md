@@ -4,6 +4,11 @@ The architecture here is opinionated, and most of the rules exist because the
 obvious alternative was tried and failed. Read this before opening a pull
 request; it will save you writing code that gets rejected on principle.
 
+Most of what follows is checked by `tests/test_repo_hygiene.py`, which CI runs
+on every pull request. That is deliberate: a rule that lives only in a document
+gets broken on a busy afternoon and nobody notices for a month. If you disagree
+with one, argue with it in an issue rather than working around the test.
+
 ## The rules that are not negotiable
 
 **Agents never write raw `bpy`.** There is no code-execution tool and there will
@@ -81,4 +86,30 @@ next person an hour.
 
 Reference images are the author's own input and are not redistributed. Point a
 model recipe's `reference` field at your own file under `assets/references/`,
-which is gitignored.
+which is gitignored. Do not commit images you did not make, and do not commit
+images you did make unless they are page assets under `docs/images/`.
+
+## What must never enter the tree
+
+CI fails on all of these, so you will find out immediately rather than after
+review. They are here so you know what the test is protecting.
+
+| Kept out | Why |
+|---|---|
+| Reference images, `assets/references/` | Not ours to redistribute |
+| `.blend` files, `preview/`, `renders/`, the asset cache | Rebuildable from documents |
+| `blendy.sqlite`, `director/studio_state.json` | Local runtime state, not source |
+| `CLAUDE.md`, `.claude/settings.local.json` | Local configuration |
+| API keys, tokens, private keys | Agents run on a Claude Code subscription; there is no key to commit |
+| Absolute `/Users/...` or `/home/...` paths | A leak, and unportable |
+| The `anthropic` SDK as a dependency | Same reason: the subscription, not the API |
+| `bpy` imported outside `compiler/` | The document layer is the only route into Blender |
+| `eval`, `exec`, or any arbitrary-code tool | Every other guarantee depends on this one |
+| Edits above a skill file's `<!-- LEARNED -->` marker | That section is human-authored and immutable |
+| Source files over 500 lines | Past that, it is two concerns |
+
+## Branch protection
+
+`main` takes pull requests, not direct pushes, and CI must pass before merge.
+This applies to the repository owner too. The point of the checks is that they
+are not skippable by whoever is in a hurry, and that is usually the owner.

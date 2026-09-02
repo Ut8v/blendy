@@ -27,6 +27,16 @@ description: Building characters, props and sets as model recipes, against a ref
 - Its dials are `brow`, `socket`, `cheek`, `jaw`, `chin`, `temple`, `age`, `ears` and a
   `nose` block whose `length` is the forward projection (~0.028 m), not its height.
   Change `height`, `width` and `depth` first; a wrong skull is not fixable with dials.
+- Cloth is simulated, not modelled. Build a `sheet` (width, drop, `arc` degrees of
+  wrap so it starts curved round the body, `shape` to flare the hem) and give it a
+  `cloth` modifier with `pin_region` at the top and `collide` naming the parts it
+  falls onto. Bake at a frame in the twenties. A cloak made of solid parts always
+  reads as a bolster.
+- Hair is strands. A `hair` part grows off an emitter part's surface and must be
+  parented to that emitter. Control it with `count`, `length`, `gravity` (strands
+  lay down instead of sticking out), `clump`, `curl`, `taper`, a `direction` bias to
+  sweep it, and a `region` with `normal_bias` so scalp hair never emits on the face.
+  Same `seed`, same hair, every build.
 - `push` sculpts by number: a centre, a radius and either a direction or a radial swell.
   Feature radii must be small. A brow ridge is a 3 cm form; spread it over 8 cm and it
   disappears back into the skull.

@@ -1,0 +1,1434 @@
+{
+  "version": "1.0",
+  "id": "haldin",
+  "kind": "character",
+  "description": "Old white-haired warrior. Dark riveted armour, bronze dragon pauldron on his right shoulder, ragged near-black cloak over the left, red rope sash, katana at the left hip. Scar over the right brow.",
+  "reference": "assets/references/haldin.png",
+  "height": 1.82,
+  "parts": [
+    {
+      "id": "torso",
+      "op": "loft",
+      "parent": null,
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 36,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0,
+              0,
+              0.855
+            ],
+            "size": [
+              0.15,
+              0.108
+            ],
+            "roundness": 1.35
+          },
+          {
+            "position": [
+              0,
+              -0.005,
+              0.945
+            ],
+            "size": [
+              0.16,
+              0.115
+            ],
+            "roundness": 1.4
+          },
+          {
+            "position": [
+              0,
+              -0.01,
+              1.055
+            ],
+            "size": [
+              0.15,
+              0.112
+            ],
+            "roundness": 1.35
+          },
+          {
+            "position": [
+              0,
+              -0.012,
+              1.165
+            ],
+            "size": [
+              0.158,
+              0.118
+            ],
+            "roundness": 1.35
+          },
+          {
+            "position": [
+              0,
+              -0.01,
+              1.29
+            ],
+            "size": [
+              0.188,
+              0.13
+            ],
+            "roundness": 1.4
+          },
+          {
+            "position": [
+              0,
+              -0.004,
+              1.4
+            ],
+            "size": [
+              0.198,
+              0.128
+            ],
+            "roundness": 1.4
+          },
+          {
+            "position": [
+              0,
+              0,
+              1.462
+            ],
+            "size": [
+              0.17,
+              0.108
+            ],
+            "roundness": 1.3
+          },
+          {
+            "position": [
+              0,
+              0.008,
+              1.502
+            ],
+            "size": [
+              0.108,
+              0.074
+            ],
+            "roundness": 1.2
+          }
+        ]
+      }
+    },
+    {
+      "id": "neck",
+      "op": "loft",
+      "parent": "torso",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 24,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0,
+              0.008,
+              1.435
+            ],
+            "size": [
+              0.09,
+              0.078
+            ],
+            "roundness": 1.2
+          },
+          {
+            "position": [
+              0,
+              0.004,
+              1.5
+            ],
+            "size": [
+              0.07,
+              0.066
+            ],
+            "roundness": 1.1
+          },
+          {
+            "position": [
+              0,
+              -0.004,
+              1.555
+            ],
+            "size": [
+              0.062,
+              0.062
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0,
+              -0.012,
+              1.605
+            ],
+            "size": [
+              0.06,
+              0.062
+            ],
+            "roundness": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "head",
+      "op": "head",
+      "parent": "torso",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          -0.012,
+          1.57
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "height": 0.25,
+        "width": 0.166,
+        "depth": 0.215,
+        "segments": 44,
+        "rings": 34,
+        "brow": 1.3,
+        "socket": 0.85,
+        "cheek": 0.55,
+        "jaw": 1.1,
+        "chin": 0.9,
+        "temple": 0.7,
+        "age": 1.15,
+        "ears": 1,
+        "nose": {
+          "length": 0.024,
+          "width": 0.034,
+          "bridge": 0.85,
+          "hook": 0.2
+        }
+      }
+    },
+    {
+      "id": "eye_l",
+      "op": "primitive",
+      "parent": "head",
+      "material": "eye",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "head",
+        "point": "eye_l",
+        "offset": [
+          0,
+          0.007,
+          0
+        ]
+      },
+      "params": {
+        "shape": "sphere",
+        "size": [
+          0.024,
+          0.024,
+          0.024
+        ],
+        "segments": 18
+      }
+    },
+    {
+      "id": "eye_r",
+      "op": "primitive",
+      "parent": "head",
+      "material": "eye",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "head",
+        "point": "eye_r",
+        "offset": [
+          0,
+          0.007,
+          0
+        ]
+      },
+      "params": {
+        "shape": "sphere",
+        "size": [
+          0.024,
+          0.024,
+          0.024
+        ],
+        "segments": 18
+      }
+    },
+    {
+      "id": "upper_arm_l",
+      "op": "loft",
+      "parent": "torso",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 24,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0.12,
+              0,
+              1.44
+            ],
+            "size": [
+              0.076,
+              0.074
+            ],
+            "roundness": 1.05
+          },
+          {
+            "position": [
+              0.185,
+              -0.004,
+              1.428
+            ],
+            "size": [
+              0.072,
+              0.07
+            ],
+            "roundness": 1.05
+          },
+          {
+            "position": [
+              0.214,
+              -0.008,
+              1.35
+            ],
+            "size": [
+              0.06,
+              0.058
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.228,
+              -0.012,
+              1.25
+            ],
+            "size": [
+              0.051,
+              0.05
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.238,
+              -0.016,
+              1.17
+            ],
+            "size": [
+              0.047,
+              0.047
+            ],
+            "roundness": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "forearm_l",
+      "op": "loft",
+      "parent": "upper_arm_l",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 22,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0.238,
+              -0.016,
+              1.172
+            ],
+            "size": [
+              0.048,
+              0.048
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.248,
+              -0.026,
+              1.105
+            ],
+            "size": [
+              0.049,
+              0.048
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.259,
+              -0.042,
+              1.01
+            ],
+            "size": [
+              0.04,
+              0.039
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.266,
+              -0.055,
+              0.95
+            ],
+            "size": [
+              0.032,
+              0.03
+            ],
+            "roundness": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "hand_l",
+      "op": "hand",
+      "parent": "forearm_l",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          3.05,
+          0,
+          0.45
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "forearm_l",
+        "point": "end",
+        "offset": [
+          0,
+          0,
+          0.01
+        ]
+      },
+      "params": {
+        "length": 0.195,
+        "width": 0.092,
+        "thickness": 0.034,
+        "curl": 0.45,
+        "spread": 0.08,
+        "thumb": 1,
+        "side": "l",
+        "segments": 14
+      }
+    },
+    {
+      "id": "upper_arm_r",
+      "op": "loft",
+      "parent": "torso",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 24,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              -0.12,
+              0,
+              1.44
+            ],
+            "size": [
+              0.076,
+              0.074
+            ],
+            "roundness": 1.05
+          },
+          {
+            "position": [
+              -0.185,
+              -0.004,
+              1.428
+            ],
+            "size": [
+              0.072,
+              0.07
+            ],
+            "roundness": 1.05
+          },
+          {
+            "position": [
+              -0.214,
+              -0.008,
+              1.35
+            ],
+            "size": [
+              0.06,
+              0.058
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              -0.228,
+              -0.012,
+              1.25
+            ],
+            "size": [
+              0.051,
+              0.05
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              -0.238,
+              -0.016,
+              1.17
+            ],
+            "size": [
+              0.047,
+              0.047
+            ],
+            "roundness": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "forearm_r",
+      "op": "loft",
+      "parent": "upper_arm_r",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 22,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              -0.238,
+              -0.016,
+              1.172
+            ],
+            "size": [
+              0.048,
+              0.048
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              -0.248,
+              -0.026,
+              1.105
+            ],
+            "size": [
+              0.049,
+              0.048
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              -0.259,
+              -0.042,
+              1.01
+            ],
+            "size": [
+              0.04,
+              0.039
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              -0.266,
+              -0.055,
+              0.95
+            ],
+            "size": [
+              0.032,
+              0.03
+            ],
+            "roundness": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "hand_r",
+      "op": "hand",
+      "parent": "forearm_r",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          3.05,
+          0,
+          -0.45
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "forearm_r",
+        "point": "end",
+        "offset": [
+          0,
+          0,
+          0.01
+        ]
+      },
+      "params": {
+        "length": 0.195,
+        "width": 0.092,
+        "thickness": 0.034,
+        "curl": 0.45,
+        "spread": 0.08,
+        "thumb": 1,
+        "side": "r",
+        "segments": 14
+      }
+    },
+    {
+      "id": "thigh_l",
+      "op": "loft",
+      "parent": "torso",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 24,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0.093,
+              -0.005,
+              0.965
+            ],
+            "size": [
+              0.1,
+              0.104
+            ],
+            "roundness": 1.15
+          },
+          {
+            "position": [
+              0.098,
+              -0.008,
+              0.86
+            ],
+            "size": [
+              0.096,
+              0.1
+            ],
+            "roundness": 1.1
+          },
+          {
+            "position": [
+              0.101,
+              -0.005,
+              0.7
+            ],
+            "size": [
+              0.082,
+              0.086
+            ],
+            "roundness": 1.05
+          },
+          {
+            "position": [
+              0.104,
+              0,
+              0.56
+            ],
+            "size": [
+              0.069,
+              0.072
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.105,
+              0.004,
+              0.478
+            ],
+            "size": [
+              0.062,
+              0.064
+            ],
+            "roundness": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "shin_l",
+      "op": "loft",
+      "parent": "thigh_l",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 22,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0.105,
+              0.004,
+              0.48
+            ],
+            "size": [
+              0.062,
+              0.064
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.105,
+              -0.006,
+              0.42
+            ],
+            "size": [
+              0.061,
+              0.064
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.104,
+              0.006,
+              0.33
+            ],
+            "size": [
+              0.055,
+              0.06
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.103,
+              0.008,
+              0.2
+            ],
+            "size": [
+              0.042,
+              0.046
+            ],
+            "roundness": 1
+          },
+          {
+            "position": [
+              0.103,
+              0.004,
+              0.088
+            ],
+            "size": [
+              0.036,
+              0.038
+            ],
+            "roundness": 1.05
+          }
+        ]
+      }
+    },
+    {
+      "id": "foot_l",
+      "op": "loft",
+      "parent": "shin_l",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 20,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0.103,
+              0.038,
+              0.044
+            ],
+            "size": [
+              0.04,
+              0.044
+            ],
+            "roundness": 1.3
+          },
+          {
+            "position": [
+              0.103,
+              -0.01,
+              0.04
+            ],
+            "size": [
+              0.047,
+              0.04
+            ],
+            "roundness": 1.4
+          },
+          {
+            "position": [
+              0.103,
+              -0.08,
+              0.034
+            ],
+            "size": [
+              0.048,
+              0.034
+            ],
+            "roundness": 1.5
+          },
+          {
+            "position": [
+              0.103,
+              -0.14,
+              0.024
+            ],
+            "size": [
+              0.04,
+              0.024
+            ],
+            "roundness": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "thigh_r",
+      "op": "loft",
+      "parent": "torso",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {},
+      "mirror_of": "thigh_l"
+    },
+    {
+      "id": "shin_r",
+      "op": "loft",
+      "parent": "thigh_r",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {},
+      "mirror_of": "shin_l"
+    },
+    {
+      "id": "foot_r",
+      "op": "loft",
+      "parent": "shin_r",
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {},
+      "mirror_of": "foot_l"
+    }
+  ],
+  "materials": {
+    "skin": {
+      "base_color": [
+        0.58,
+        0.4,
+        0.31
+      ],
+      "roughness": 0.6,
+      "subsurface": 0.2,
+      "noise": {
+        "scale": 25,
+        "strength": 0.2,
+        "color": [
+          0.5,
+          0.3,
+          0.25
+        ],
+        "detail": 3
+      },
+      "bump": {
+        "strength": 0.3,
+        "scale": 60
+      }
+    },
+    "eye": {
+      "base_color": [
+        0.5,
+        0.58,
+        0.6
+      ],
+      "roughness": 0.15,
+      "specular": 0.8
+    },
+    "hair": {
+      "base_color": [
+        0.8,
+        0.8,
+        0.78
+      ],
+      "roughness": 0.7,
+      "noise": {
+        "scale": 80,
+        "strength": 0.35,
+        "color": [
+          0.5,
+          0.5,
+          0.48
+        ],
+        "detail": 4
+      },
+      "bump": {
+        "strength": 0.6,
+        "scale": 120
+      }
+    },
+    "dark_steel": {
+      "base_color": [
+        0.05,
+        0.045,
+        0.045
+      ],
+      "metallic": 0.7,
+      "roughness": 0.55,
+      "noise": {
+        "scale": 15,
+        "strength": 0.35,
+        "color": [
+          0.12,
+          0.07,
+          0.05
+        ],
+        "detail": 4
+      },
+      "grunge": {
+        "strength": 0.6,
+        "scale": 12
+      },
+      "scratches": {
+        "strength": 0.12,
+        "scale": 80
+      },
+      "bump": {
+        "strength": 0.5,
+        "scale": 25
+      }
+    },
+    "bronze": {
+      "base_color": [
+        0.6,
+        0.38,
+        0.14
+      ],
+      "metallic": 1,
+      "roughness": 0.4,
+      "noise": {
+        "scale": 30,
+        "strength": 0.4,
+        "color": [
+          0.25,
+          0.15,
+          0.06
+        ],
+        "detail": 4
+      },
+      "grunge": {
+        "strength": 0.5,
+        "scale": 20
+      },
+      "bump": {
+        "strength": 0.4,
+        "scale": 40
+      }
+    },
+    "cloak": {
+      "base_color": [
+        0.025,
+        0.024,
+        0.026
+      ],
+      "roughness": 1,
+      "sheen": 0.15,
+      "noise": {
+        "scale": 10,
+        "strength": 0.25,
+        "color": [
+          0.06,
+          0.055,
+          0.05
+        ],
+        "detail": 3
+      },
+      "grunge": {
+        "strength": 0.3,
+        "scale": 8
+      },
+      "bump": {
+        "strength": 0.6,
+        "scale": 30
+      }
+    },
+    "sash": {
+      "base_color": [
+        0.3,
+        0.05,
+        0.04
+      ],
+      "roughness": 0.9,
+      "noise": {
+        "scale": 30,
+        "strength": 0.35,
+        "color": [
+          0.16,
+          0.03,
+          0.03
+        ],
+        "detail": 3
+      },
+      "bump": {
+        "strength": 0.5,
+        "scale": 60
+      }
+    },
+    "leather": {
+      "base_color": [
+        0.14,
+        0.09,
+        0.06
+      ],
+      "roughness": 0.65,
+      "grunge": {
+        "strength": 0.5,
+        "scale": 15
+      },
+      "bump": {
+        "strength": 0.35,
+        "scale": 40
+      }
+    },
+    "dark_cloth": {
+      "base_color": [
+        0.05,
+        0.05,
+        0.06
+      ],
+      "roughness": 0.95,
+      "sheen": 0.1,
+      "noise": {
+        "scale": 20,
+        "strength": 0.3,
+        "color": [
+          0.09,
+          0.08,
+          0.08
+        ],
+        "detail": 3
+      },
+      "bump": {
+        "strength": 0.4,
+        "scale": 80
+      }
+    },
+    "scar": {
+      "base_color": [
+        0.3,
+        0.12,
+        0.1
+      ],
+      "roughness": 0.6
+    },
+    "lacquer": {
+      "base_color": [
+        0.03,
+        0.03,
+        0.035
+      ],
+      "roughness": 0.3,
+      "specular": 0.6,
+      "grunge": {
+        "strength": 0.3,
+        "scale": 20
+      }
+    },
+    "wrap": {
+      "base_color": [
+        0.07,
+        0.06,
+        0.06
+      ],
+      "roughness": 0.8,
+      "noise": {
+        "scale": 120,
+        "strength": 0.4,
+        "color": [
+          0.14,
+          0.12,
+          0.11
+        ],
+        "detail": 2
+      },
+      "bump": {
+        "strength": 0.9,
+        "scale": 160
+      }
+    }
+  },
+  "landmarks": {
+    "eye_L": {
+      "part": "head",
+      "anchor": "point:eye_l"
+    },
+    "eye_R": {
+      "part": "head",
+      "anchor": "point:eye_r"
+    },
+    "eye_midpoint": {
+      "part": "head",
+      "anchor": "point:eye_midpoint"
+    },
+    "ear_L": {
+      "part": "head",
+      "anchor": "point:ear_l"
+    },
+    "ear_R": {
+      "part": "head",
+      "anchor": "point:ear_r"
+    },
+    "head_top": {
+      "part": "head",
+      "anchor": "point:head_top"
+    },
+    "chin": {
+      "part": "head",
+      "anchor": "point:chin"
+    },
+    "neck": {
+      "part": "neck",
+      "anchor": "point:start",
+      "offset": [
+        0,
+        -0.008,
+        0.06
+      ]
+    },
+    "chest": {
+      "part": "torso",
+      "anchor": "center"
+    },
+    "shoulder_L": {
+      "part": "upper_arm_l",
+      "anchor": "point:start"
+    },
+    "shoulder_R": {
+      "part": "upper_arm_r",
+      "anchor": "point:start"
+    },
+    "hand_L": {
+      "part": "hand_l",
+      "anchor": "point:palm"
+    },
+    "hand_R": {
+      "part": "hand_r",
+      "anchor": "point:palm"
+    },
+    "hip": {
+      "part": "torso",
+      "anchor": "point:start"
+    },
+    "foot_L": {
+      "part": "foot_l",
+      "anchor": "bottom"
+    },
+    "foot_R": {
+      "part": "foot_r",
+      "anchor": "bottom"
+    },
+    "ground_contact": {
+      "position": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "skeleton": null
+}

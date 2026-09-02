@@ -1,0 +1,378 @@
+{
+  "version": "1.0",
+  "id": "cloth_test",
+  "kind": "prop",
+  "description": "Cloth and hair builder check: a cloak draped on a torso, hair on a head.",
+  "reference": null,
+  "height": null,
+  "parts": [
+    {
+      "id": "torso",
+      "op": "loft",
+      "parent": null,
+      "material": "cloth",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 28,
+        "resolution": 3,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0,
+              0,
+              0.95
+            ],
+            "size": [
+              0.15,
+              0.105
+            ],
+            "roundness": 1.3
+          },
+          {
+            "position": [
+              0,
+              -0.01,
+              1.15
+            ],
+            "size": [
+              0.16,
+              0.108
+            ],
+            "roundness": 1.35
+          },
+          {
+            "position": [
+              0,
+              -0.02,
+              1.35
+            ],
+            "size": [
+              0.2,
+              0.118
+            ],
+            "roundness": 1.4
+          },
+          {
+            "position": [
+              0,
+              -0.01,
+              1.45
+            ],
+            "size": [
+              0.185,
+              0.112
+            ],
+            "roundness": 1.3
+          }
+        ]
+      }
+    },
+    {
+      "id": "cloak",
+      "op": "sheet",
+      "parent": null,
+      "material": "cloak",
+      "modifiers": [
+        {
+          "type": "cloth",
+          "frame": 34,
+          "pin_region": {
+            "axis": "z",
+            "min": 0.94,
+            "max": 1.0
+          },
+          "collide": [
+            "torso"
+          ],
+          "clearance": 0.014,
+          "stiffness": 4,
+          "bending": 0.12,
+          "mass": 0.35,
+          "quality": 10
+        },
+        {
+          "type": "solidify",
+          "thickness": 0.004
+        }
+      ],
+      "transform": {
+        "location": [
+          0,
+          -0.02,
+          1.47
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "size": [
+          0.58,
+          0.85
+        ],
+        "resolution": [
+          30,
+          34
+        ],
+        "wrap": 0.0,
+        "slack": 0.015,
+        "shape": [
+          [
+            0,
+            1.0
+          ],
+          [
+            0.4,
+            1.08
+          ],
+          [
+            1,
+            1.12
+          ]
+        ],
+        "curve": [
+          [
+            0,
+            0.0
+          ],
+          [
+            1,
+            0.0
+          ]
+        ],
+        "arc": 172.0
+      }
+    },
+    {
+      "id": "head",
+      "op": "head",
+      "parent": null,
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          1.48
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "height": 0.235,
+        "width": 0.155,
+        "depth": 0.205,
+        "segments": 40,
+        "rings": 32,
+        "brow": 0.9,
+        "socket": 0.8,
+        "jaw": 0.8,
+        "chin": 0.7,
+        "age": 0.8,
+        "nose": {
+          "length": 0.028,
+          "width": 0.036,
+          "bridge": 0.7,
+          "hook": 0.4
+        }
+      }
+    },
+    {
+      "id": "hair",
+      "op": "hair",
+      "parent": "head",
+      "material": "hair",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "emitter": "head",
+        "count": 340,
+        "length": 0.34,
+        "radius": 0.0035,
+        "segments": 9,
+        "sides": 5,
+        "clump": 0.55,
+        "gravity": 1.0,
+        "curl": 0.2,
+        "sway": 0.12,
+        "taper": 0.5,
+        "direction": [
+          0,
+          0.95,
+          0.15
+        ],
+        "region": {
+          "axis": "z",
+          "min": 0.66,
+          "max": 1.0,
+          "normal_bias": {
+            "direction": [
+              0,
+              0.55,
+              0.83
+            ],
+            "min_dot": 0.35
+          }
+        },
+        "seed": 3
+      }
+    },
+    {
+      "id": "beard",
+      "op": "hair",
+      "parent": "head",
+      "material": "hair",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "emitter": "head",
+        "count": 220,
+        "length": 0.13,
+        "radius": 0.003,
+        "segments": 7,
+        "sides": 5,
+        "clump": 0.5,
+        "gravity": 1.0,
+        "curl": 0.5,
+        "sway": 0.15,
+        "taper": 0.55,
+        "region": {
+          "axis": "z",
+          "min": 0.03,
+          "max": 0.34,
+          "normal_bias": {
+            "direction": [
+              0,
+              -1,
+              0
+            ],
+            "min_dot": 0.25
+          }
+        },
+        "seed": 7,
+        "direction": [
+          0,
+          -0.15,
+          0
+        ]
+      }
+    }
+  ],
+  "materials": {
+    "skin": {
+      "base_color": [
+        0.64,
+        0.47,
+        0.38
+      ],
+      "roughness": 0.6,
+      "subsurface": 0.12
+    },
+    "hair": {
+      "base_color": [
+        0.84,
+        0.84,
+        0.81
+      ],
+      "roughness": 0.75,
+      "noise": {
+        "scale": 60,
+        "strength": 0.3,
+        "color": [
+          0.55,
+          0.55,
+          0.52
+        ]
+      }
+    },
+    "cloth": {
+      "base_color": [
+        0.22,
+        0.2,
+        0.2
+      ],
+      "roughness": 0.85
+    },
+    "cloak": {
+      "base_color": [
+        0.08,
+        0.075,
+        0.075
+      ],
+      "roughness": 0.95,
+      "sheen": 0.3
+    }
+  },
+  "landmarks": {
+    "eye_L": {
+      "part": "head",
+      "anchor": "point:eye_l"
+    }
+  },
+  "skeleton": null
+}

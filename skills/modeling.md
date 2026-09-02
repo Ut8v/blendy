@@ -10,7 +10,7 @@ description: Building characters, props and sets as model recipes, against a ref
   (`preview_model` then `read_image` on every view, especially `compare.png`). Never
   batch more than a few patches before looking. Never touch anything but the recipe.
 - Work in the real order: silhouette first (big masses with `skin` and `primitive`), then
-  proportions against the reference, then secondary forms (armour, cloak, hair as `tube`
+  proportions against the reference, then secondary forms (armor, cloak, hair as `tube`
   bundles), then materials, then detail (bevel, displace, grunge). Detail on a wrong
   silhouette is wasted.
 - Pick the builder that matches the form. `loft` is the workhorse for bodies, limbs,
@@ -42,7 +42,7 @@ description: Building characters, props and sets as model recipes, against a ref
   disappears back into the skull.
 - Symmetry: build the left side and add a part with `mirror_of` for the right. Keep the
   character centered on X, facing -Y, feet at z=0, and `height` set to the intended height.
-- Every transform is relative to the parent. Parent limbs, armour and hair to the body
+- Every transform is relative to the parent. Parent limbs, armor and hair to the body
   part they attach to, so moving the body moves them.
 - Landmarks are named parts + anchors. A character must declare the core set (`eye_L`,
   `eye_R`, `eye_midpoint`, `ear_L/R`, `head_top`, `chin`, `neck`, `shoulder_L/R`,

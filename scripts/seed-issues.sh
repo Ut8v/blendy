@@ -47,7 +47,7 @@ new "Face detail is too subtle to read" "quality" \
 
 Either the strengths are too low or the falloff radii are too wide. Compare a bare head at `age` 0 and 1.5 to calibrate.'
 
-new "Armour detail: rivets, straps and lamellar rows" "builder" \
+new "Armor detail: rivets, straps and lamellar rows" "builder" \
 'Surface detail is procedural noise only, so plate rows and rivets are implied rather than modeled. A row builder that instances a small form along a path would cover most cases and is cheap.'
 
 new "Ingest pipeline has never been run" "unverified" \

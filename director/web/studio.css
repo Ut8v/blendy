@@ -72,3 +72,16 @@ button.rec { background: #a33; }
 .badge.bad { background: #4a2626; color: #f0a0a0; }
 #lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.85); display: none; align-items: center; justify-content: center; z-index: 10; cursor: zoom-out; }
 #lightbox img { max-width: 95vw; max-height: 95vh; }
+
+/* models tab */
+.models-split { flex: 1; display: grid; grid-template-columns: 230px 1fr; min-height: 0; }
+.model-list { overflow-y: auto; border-right: 1px solid var(--line); padding: 6px; }
+.model-list .item { display: block; cursor: pointer; }
+.model-list .item.sel { background: #2f3a4d; }
+.model-list .item code { display: block; }
+.model-views { overflow-y: auto; padding: 10px; display: grid; gap: 10px;
+               grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); align-content: start; }
+.model-views figure { margin: 0; background: var(--panel); border-radius: 6px; overflow: hidden; }
+.model-views figure.wide { grid-column: 1 / -1; }
+.model-views img { width: 100%; display: block; cursor: zoom-in; }
+.model-views figcaption { padding: 4px 8px; font-size: 11px; color: var(--muted); }

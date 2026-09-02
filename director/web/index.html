@@ -40,6 +40,7 @@
   <section id="center">
     <nav id="tabs">
       <button data-tab="previews" class="active">previews</button>
+      <button data-tab="models">models</button>
       <button data-tab="director">director</button>
       <button data-tab="renders">renders</button>
     </nav>
@@ -53,6 +54,19 @@
       </div>
       <div id="latest" class="latest"></div>
       <div id="history" class="history"></div>
+    </div>
+    <div id="tab-models" class="tab">
+      <div class="toolbar">
+        <strong id="modelTitle">—</strong>
+        <select id="modelQuality"><option value="lookdev">lookdev</option><option value="fast">fast</option></select>
+        <button id="modelBuild" class="primary">build turntable</button>
+        <button id="modelReload" class="ghost">refresh</button>
+        <span id="modelStatus" class="muted"></span>
+      </div>
+      <div class="models-split">
+        <div id="modelList" class="model-list"></div>
+        <div id="modelViews" class="model-views"></div>
+      </div>
     </div>
     <div id="tab-director" class="tab">
       <div class="toolbar">
@@ -75,6 +89,6 @@
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
 </script>
-<script type="module" src="studio.js"></script>
+<script type="module" src="studio.js?v=6"></script>
 </body>
 </html>

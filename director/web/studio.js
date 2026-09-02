@@ -2,6 +2,7 @@
 import { Chat } from './chat.js';
 import { renderPanel, renderPreviews, renderRenders } from './panels.js';
 import { mountDirector } from './director.js';
+import { mountModels } from './models.js';
 
 const $ = id => document.getElementById(id);
 export const api = {
@@ -66,8 +67,14 @@ function wire() {
   document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('active', x === b));
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.id === 'tab-' + b.dataset.tab));
-    if (b.dataset.tab === 'director' && !studio.director) { studio.director = mountDirector($('director-view'), $('frame'), api, studio); studio.director.load(studio.info); }
-    if (studio.director) studio.director.resize();
+    try {
+      if (b.dataset.tab === 'models' && studio.models) studio.models.refresh();
+      if (b.dataset.tab === 'director' && !studio.director) {
+        studio.director = mountDirector($('director-view'), $('frame'), api, studio);
+        studio.director.load(studio.info);
+      }
+      if (studio.director) studio.director.resize();
+    } catch (e) { console.error('tab switch failed', e); }
   }));
   document.querySelectorAll('[data-action]').forEach(b => b.addEventListener('click', () => runAction(b.dataset.action, b.dataset.args ? JSON.parse(b.dataset.args) : {})));
   document.addEventListener('click', e => { if (e.target.matches('img[data-full]')) lightbox(e.target.dataset.full); });
@@ -76,5 +83,7 @@ function wire() {
 
 wire();
 studio.chat = new Chat($('messages'), $('composer'), $('input'), $('send'), $('stop'), $('turnStatus'), $('quick'), studio, refreshShot);
+studio.models = mountModels(api, studio);
+studio.models.refresh().catch(e => console.error('models', e));
 refreshOverview();
 setInterval(() => { if (!studio.chat.busy) refreshOverview(); }, 15000);

@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
 import bpy  # noqa: E402
+from mathutils import Vector  # noqa: E402
 
 from compiler import scene as sc                                   # noqa: E402
 from compiler.modeling.build_model import instantiate, resolve_landmarks, write_profile   # noqa: E402
@@ -105,6 +106,172 @@ class TestBuilders(unittest.TestCase):
         for pid in "abcd":
             self.assertEqual(objects[pid].type, "MESH", pid)
             self.assertGreater(len(objects[pid].data.polygons), 0, pid)
+
+
+T0 = {"location": [0, 0, 0], "rotation_euler": [0, 0, 0], "scale": [1, 1, 1]}
+
+
+def one_part(pid, op, params, **extra):
+    part = {"id": pid, "op": op, "parent": None, "material": None, "modifiers": [],
+            "transform": dict(T0), "params": params}
+    part.update(extra)
+    return {"version": "1.0", "id": "t_" + pid, "kind": "prop", "reference": None, "height": None,
+            "materials": {}, "landmarks": {}, "skeleton": None, "parts": [part]}
+
+
+def bounds(obj):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    ev = obj.evaluated_get(depsgraph)
+    pts = [ev.matrix_world @ Vector(c) for c in ev.bound_box]
+    return (Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts))),
+            Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts))))
+
+
+class TestLoft(unittest.TestCase):
+    def test_quad_grid_of_the_expected_size(self):
+        path = [{"position": [0, 0, z / 4.0], "size": [0.1, 0.05], "roundness": 1.0} for z in range(5)]
+        model = one_part("tube", "loft", {"path": path, "segments": 16, "resolution": 1, "caps": True})
+        _root, objects = build_recipe(model)
+        mesh = objects["tube"].data
+        self.assertEqual(len(mesh.vertices), 16 * 5)
+        self.assertTrue(all(len(p.vertices) == 4 for p in mesh.polygons if len(p.vertices) != 16))
+        lo, hi = bounds(objects["tube"])
+        self.assertAlmostEqual(hi.x - lo.x, 0.2, places=3)
+        self.assertAlmostEqual(hi.y - lo.y, 0.1, places=3)
+        self.assertAlmostEqual(hi.z - lo.z, 1.0, places=3)
+
+    def test_roundness_changes_the_section_not_its_extent(self):
+        area = {}
+        for name, r in (("round", 1.0), ("boxy", 2.0)):
+            path = [{"position": [0, 0, 0], "size": [0.1, 0.1], "roundness": r},
+                    {"position": [0, 0, 0.5], "size": [0.1, 0.1], "roundness": r}]
+            _root, objects = build_recipe(one_part(name, "loft", {"path": path, "segments": 32, "resolution": 1}))
+            obj = objects[name]
+            lo, hi = bounds(obj)
+            self.assertAlmostEqual(hi.x - lo.x, 0.2, places=3)      # same extent either way
+            area[name] = sum(f.area for f in obj.data.polygons)
+        self.assertGreater(area["boxy"], area["round"])              # a square holds more than a circle
+
+    def test_path_resolution_adds_rings(self):
+        path = [{"position": [0, 0, z / 2.0], "size": [0.1, 0.1]} for z in range(3)]
+        counts = []
+        for res in (1, 4):
+            _root, objects = build_recipe(one_part("p", "loft", {"path": path, "segments": 12, "resolution": res}))
+            counts.append(len(objects["p"].data.vertices))
+        self.assertGreaterEqual(counts[1], counts[0] * 3)
+
+    def test_publishes_start_and_end(self):
+        path = [{"position": [0, 0, 0], "size": [0.1, 0.1]}, {"position": [0, 0, 0.4], "size": [0.05, 0.05]}]
+        _root, objects = build_recipe(one_part("p", "loft", {"path": path, "segments": 12}))
+        pts = objects["p"]["blendy_points"]
+        for got, want in zip(pts["end"], (0.0, 0.0, 0.4)):
+            self.assertAlmostEqual(got, want, places=5)
+
+
+class TestHead(unittest.TestCase):
+    def head(self, **over):
+        params = {"height": 0.235, "width": 0.155, "depth": 0.205, "segments": 32, "rings": 28}
+        params.update(over)
+        _root, objects = build_recipe(one_part("head", "head", params))
+        return objects["head"]
+
+    def test_dimensions_follow_the_parameters(self):
+        lo, hi = bounds(self.head(ears=0.0, nose=None))
+        self.assertAlmostEqual(hi.z - lo.z, 0.235, delta=0.012)     # chin to crown
+        self.assertAlmostEqual(hi.x - lo.x, 0.155, delta=0.004)
+        self.assertGreater(hi.z - lo.z, hi.y - lo.y)                # the bare skull is taller than deep
+        lo, hi = bounds(self.head())
+        self.assertAlmostEqual(hi.x - lo.x, 0.155, delta=0.035)     # ears add a little
+
+    def test_skull_is_asymmetric_front_to_back(self):
+        obj = self.head()
+        zs = [v.co.z for v in obj.data.vertices]
+        top = [v.co for v in obj.data.vertices if v.co.z > 0.62 * 0.235]
+        bottom = [v.co for v in obj.data.vertices if v.co.z < 0.18 * 0.235]
+        # the cranium reaches further back than the jaw does
+        self.assertGreater(max(v.y for v in top), max(v.y for v in bottom) + 0.02)
+        # and the face plane stays forward all the way down
+        self.assertLess(min(v.y for v in bottom), min(v.y for v in top) + 0.03)
+        self.assertAlmostEqual(min(zs), 0.0, delta=0.005)
+
+    def test_publishes_the_face_vocabulary(self):
+        pts = self.head()["blendy_points"]
+        for name in ("eye_l", "eye_r", "eye_midpoint", "ear_l", "ear_r", "chin",
+                     "head_top", "nose_tip", "mouth", "jaw_l", "jaw_r", "neck", "brow"):
+            self.assertIn(name, pts)
+        self.assertGreater(pts["eye_l"][0], 0)                       # .L is +X
+        self.assertLess(pts["eye_r"][0], 0)
+        self.assertLess(pts["nose_tip"][1], pts["eye_midpoint"][1])  # the nose is in front of the eyes
+        self.assertGreater(pts["head_top"][2], pts["chin"][2])
+
+    def test_features_actually_move_the_surface(self):
+        profile = lambda o: {round(v.co.z, 4): v.co.y for v in o.data.vertices
+                             if abs(v.co.x) < 0.004 and v.co.y < 0}
+        fy = profile(self.head(brow=0.0, socket=0.0, cheek=0.0, jaw=0.0, chin=0.0, age=0.0))
+        cy = profile(self.head(brow=1.2, socket=1.2, cheek=1.0, jaw=1.0, chin=1.0, age=0.8))
+        shared = set(fy) & set(cy)
+        self.assertTrue(shared)
+        self.assertGreater(max(abs(fy[z] - cy[z]) for z in shared), 0.004)   # >4 mm of brow/chin
+
+    def test_nose_and_ears_can_be_switched_off(self):
+        bare = self.head(ears=0.0, nose=None)
+        n_bare, (lo, hi) = len(bare.data.vertices), bounds(bare)
+        self.assertAlmostEqual(hi.x - lo.x, 0.155, delta=0.004)      # no ears sticking out
+        self.assertLess(n_bare, len(self.head().data.vertices))
+
+
+class TestHand(unittest.TestCase):
+    def test_builds_fingers_and_a_thumb(self):
+        _root, objects = build_recipe(one_part("hand", "hand", {"length": 0.19, "width": 0.09, "side": "l"}))
+        obj = objects["hand"]
+        lo, hi = bounds(obj)
+        self.assertAlmostEqual(hi.z - lo.z, 0.19, delta=0.03)
+        self.assertGreater(len(obj.data.polygons), 400)
+        pts = obj["blendy_points"]
+        self.assertGreater(pts["thumb_tip"][0], 0)                   # left hand: thumb toward +X
+
+    def test_side_mirrors_the_thumb(self):
+        made = {}
+        for side in ("l", "r"):
+            _root, objects = build_recipe(one_part("h", "hand", {"length": 0.19, "width": 0.09, "side": side}))
+            made[side] = objects["h"]["blendy_points"]["thumb_tip"][0]
+        self.assertAlmostEqual(made["l"], -made["r"], places=5)
+
+
+class TestPushModifier(unittest.TestCase):
+    def test_push_dents_the_surface(self):
+        params = {"shape": "sphere", "size": [0.4, 0.4, 0.4], "segments": 24}
+        plain = build_recipe(one_part("s", "primitive", params))[1]["s"]
+        before = max(v.co.y for v in plain.data.vertices)
+        model = one_part("s", "primitive", params)
+        model["parts"][0]["modifiers"] = [{"type": "push", "center": [0, 0.2, 0], "radius": 0.25,
+                                           "direction": [0, -1, 0], "strength": 0.08}]
+        dented = build_recipe(model)[1]["s"]
+        self.assertLess(max(v.co.y for v in dented.data.vertices), before - 0.05)
+
+    def test_radial_push_swells(self):
+        params = {"shape": "cylinder", "size": [0.2, 0.2, 0.6], "segments": 24}
+        model = one_part("c", "primitive", params)
+        model["parts"][0]["modifiers"] = [{"type": "push", "center": [0, 0, 0], "radius": 0.3,
+                                           "strength": 0.05, "axis": "z"}]
+        obj = build_recipe(model)[1]["c"]
+        lo, hi = bounds(obj)
+        self.assertGreater(hi.x - lo.x, 0.2)
+
+
+class TestAtPlacement(unittest.TestCase):
+    def test_part_lands_on_a_published_point(self):
+        model = one_part("head", "head", {"height": 0.235, "width": 0.155, "depth": 0.205,
+                                          "segments": 24, "rings": 20})
+        model["parts"].append({"id": "eye_l", "op": "primitive", "parent": "head", "material": None,
+                               "modifiers": [], "transform": dict(T0),
+                               "at": {"part": "head", "point": "eye_l", "offset": [0, 0, 0.01]},
+                               "params": {"shape": "sphere", "size": [0.024, 0.024, 0.024]}})
+        _root, objects = build_recipe(model)
+        want = Vector(objects["head"]["blendy_points"]["eye_l"]) + Vector((0, 0, 0.01))
+        got = objects["eye_l"].matrix_world.translation
+        for a, b in zip(got, want):
+            self.assertAlmostEqual(a, b, places=5)
 
 
 class TestModelInShot(unittest.TestCase):

@@ -223,8 +223,11 @@ def build_hair(name: str, p: dict[str, Any], smooth: bool | None) -> bpy.types.O
     raise RuntimeError("hair builder lands with milestone 23; use tube bundles for strands meanwhile")
 
 
+from .anatomy import build_hand, build_head, build_loft   # noqa: E402  (circular-safe: anatomy imports loft only)
+
 BUILDERS = {"primitive": build_primitive, "skin": build_skin, "revolve": build_revolve,
-            "extrude": build_extrude, "tube": build_tube, "metaball": build_metaball, "hair": build_hair}
+            "extrude": build_extrude, "tube": build_tube, "metaball": build_metaball,
+            "hair": build_hair, "loft": build_loft, "head": build_head, "hand": build_hand}
 
 
 def mirror_x(obj: bpy.types.Object, name: str) -> bpy.types.Object:

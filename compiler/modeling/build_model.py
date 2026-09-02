@@ -95,6 +95,21 @@ def instantiate(model: dict[str, Any], prefix: str, link) -> tuple[bpy.types.Obj
             obj.data.materials.append(materials[part["material"]])
         obj["blendy_part"] = part["id"]
         objects[part["id"]] = obj
+    bpy.context.view_layer.update()
+    for part in model["parts"]:                      # `at` placement, after every part exists
+        at = part.get("at")
+        if not at:
+            continue
+        src = objects[at["part"]]
+        points = src.get("blendy_points") or {}
+        if at["point"] not in points:
+            raise RuntimeError(f"part '{part['id']}': '{at['part']}' publishes no point "
+                               f"'{at['point']}' (have: {', '.join(sorted(points)) or 'none'})")
+        obj = objects[part["id"]]
+        world = src.matrix_world @ Vector(points[at["point"]])
+        space = obj.parent.matrix_world.inverted() if obj.parent else Matrix.Identity(4)
+        obj.location = (space @ world) + Vector(at.get("offset", (0, 0, 0)))
+    bpy.context.view_layer.update()
     for part in model["parts"]:
         if part["modifiers"] and objects[part["id"]].type == "MESH":
             apply_modifiers(objects[part["id"]], part["modifiers"], objects)
@@ -124,7 +139,14 @@ def resolve_landmarks(model: dict[str, Any], root: bpy.types.Object,
         obj = objects[lm["part"]]
         anchor = lm["anchor"]
         normal = Vector((0, 0, 1))
-        if anchor.startswith("joint:"):
+        if anchor.startswith("point:"):
+            points = obj.get("blendy_points") or {}
+            pname = anchor[6:]
+            if pname not in points:
+                raise RuntimeError(f"landmark '{name}': part '{lm['part']}' publishes no point "
+                                   f"'{pname}' (have: {', '.join(sorted(points)) or 'none'})")
+            pos = obj.matrix_world @ Vector(points[pname])
+        elif anchor.startswith("joint:"):
             src = model_part(model, lm["part"])
             joint = src["params"]["joints"][anchor[6:]]
             pos = obj.matrix_world @ Vector(joint["position"])
@@ -159,7 +181,8 @@ def measure(objects: dict[str, bpy.types.Object]) -> dict[str, Any]:
         polys += len(obj.evaluated_get(depsgraph).data.polygons)
     if not los:
         return {"bbox_min": [0, 0, 0], "bbox_max": [0, 0, 0], "dimensions": [0, 0, 0], "poly_count": 0}
-    lo, hi = Vector(map(min, *los)), Vector(map(max, *his))
+    lo = Vector((min(v.x for v in los), min(v.y for v in los), min(v.z for v in los)))
+    hi = Vector((max(v.x for v in his), max(v.y for v in his), max(v.z for v in his)))
     return {"bbox_min": list(lo), "bbox_max": list(hi), "dimensions": list(hi - lo), "poly_count": polys}
 
 

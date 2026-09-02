@@ -28,7 +28,8 @@ def _bounds(objects) -> tuple[Vector, Vector]:
         los.append(Vector(map(min, *pts))); his.append(Vector(map(max, *pts)))
     if not los:
         return Vector((-0.5, -0.5, 0)), Vector((0.5, 0.5, 1))
-    return Vector(map(min, *los)), Vector(map(max, *his))
+    return (Vector((min(v.x for v in los), min(v.y for v in los), min(v.z for v in los))),
+            Vector((max(v.x for v in his), max(v.y for v in his), max(v.z for v in his))))
 
 
 def _studio_lights(scene, center: Vector, extent: float) -> None:

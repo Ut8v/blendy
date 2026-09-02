@@ -67,10 +67,30 @@ def apply_modifiers(obj: bpy.types.Object, mods: list[dict[str, Any]],
         elif t == "decimate":
             mod = obj.modifiers.new(name, "DECIMATE")
             mod.ratio = m["ratio"]
+        elif t == "push":
+            _push(obj, m)
         elif t == "cloth":
             _cloth(obj, m, name)
         else:
             raise RuntimeError(f"unknown modifier type {t!r}")
+
+
+def _push(obj: bpy.types.Object, m: dict[str, Any]) -> None:
+    """Sculpt by number: swell or dent the mesh around a point. `direction` makes
+    it directional, otherwise it pushes radially away from the axis."""
+    import bmesh
+
+    from .loft import push, push_radial
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    if m.get("direction"):
+        push(bm.verts, m["center"], m["radius"], m["direction"], m["strength"],
+             m.get("falloff", "smooth"))
+    else:
+        push_radial(bm.verts, m["center"], m["radius"], m["strength"], m.get("axis", "z"))
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
 
 
 def _cloth(obj: bpy.types.Object, m: dict[str, Any], name: str) -> None:

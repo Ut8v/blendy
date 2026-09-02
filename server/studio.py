@@ -24,7 +24,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from compiler.validate import load_json                            # noqa: E402
-from server import claude_runner, director                          # noqa: E402
+from server import claude_runner, director, jobs                    # noqa: E402
 from server.state import get_state                                  # noqa: E402
 from server.tools import director_tools, model_tools, sequence_tools, spec_tools  # noqa: E402
 
@@ -43,6 +43,8 @@ class Turn:
     """
 
     def __init__(self, message: str, session_id: str | None, shot: str | None, agent: str | None):
+        self.message = message
+        self.started = time.time()
         self.events: list[dict] = []
         self.done = False
         self.shot = shot
@@ -53,6 +55,7 @@ class Turn:
     def _run(self) -> None:
         try:
             for event in self._turn.events():
+                event["t"] = time.time()
                 with self._lock:
                     self.events.append(event)
         except Exception as e:  # noqa: BLE001
@@ -63,7 +66,7 @@ class Turn:
                       "turns": state.get("turns", 0) + 1})
         claude_runner.save_state(state)
         with self._lock:
-            self.events.append({"type": "done"})
+            self.events.append({"type": "done", "t": time.time()})
             self.done = True
 
     def since(self, index: int) -> list[dict]:
@@ -107,6 +110,33 @@ def _models() -> list[dict]:
             pass
         out.append(m)
     return out
+
+
+def _activity() -> dict:
+    """What the agents are doing: the live turn's tool calls, and any Blender job."""
+    turn, tools = _current_turn, []
+    if turn is not None:
+        pending: dict[str, dict] = {}
+        for event in turn.since(0):
+            if event["type"] == "tool_use":
+                brief = ", ".join(f"{k}={str(v)[:26]}" for k, v in (event.get("input") or {}).items())
+                entry = {"name": (event.get("name") or "").replace("mcp__blendy__", ""),
+                         "brief": brief[:90], "started": event.get("t"), "ended": None, "ok": None}
+                pending[event.get("id")] = entry
+                tools.append(entry)
+            elif event["type"] == "tool_result":
+                entry = pending.get(event.get("tool_use_id"))
+                if entry:
+                    entry["ended"] = event.get("t")
+                    entry["ok"] = not event.get("is_error")
+                    entry["images"] = event.get("images") or []
+    current = next((t for t in reversed(tools) if t["ended"] is None), None)
+    return {"turn": {"running": bool(turn and not turn.done),
+                     "started": turn.started if turn else None,
+                     "seconds": round(time.time() - turn.started, 1) if turn else 0,
+                     "message": (turn.message[:160] if turn else None),
+                     "shot": turn.shot if turn else None},
+            "current": current, "tools": tools[-50:], "jobs": jobs.listing(12)}
 
 
 def _previews(shot: str) -> list[dict]:
@@ -216,6 +246,10 @@ class Handler(SimpleHTTPRequestHandler):
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
         if url.path == "/api/overview":
             return self._safe(_overview)
+        if url.path == "/api/activity":
+            return self._safe(_activity)
+        if url.path == "/api/jobs":
+            return self._safe(lambda: jobs.listing())
         if url.path == "/api/chat/state":
             t = _current_turn
             return self._json(200, {"running": bool(t and not t.done),
@@ -309,13 +343,21 @@ class Handler(SimpleHTTPRequestHandler):
         "checkpoint_model": lambda a: model_tools.checkpoint_model(a["model"], a["label"]),
     }
 
+    SLOW = {"render_preview", "compile_scene", "render_final", "export_proxy", "preview_model"}
+
     def _action(self, b: dict) -> dict:
         if b.get("shot"):
             get_state().open(b["shot"])      # disk is the truth; the MCP process may have changed it
-        fn = self.ACTIONS.get(b.get("action"))
+        action = b.get("action")
+        fn = self.ACTIONS.get(action)
         if fn is None:
-            raise KeyError(f"unknown action {b.get('action')!r}")
-        return fn(b.get("args", {}))
+            raise KeyError(f"unknown action {action!r}")
+        args = b.get("args", {})
+        if action in self.SLOW:
+            label = args.get("model") or b.get("shot") or ""
+            job = jobs.start(action, f"{action} {label}".strip(), lambda: fn(args))
+            return {"job": job.id, "started": True}
+        return fn(args)
 
     def _chat(self, b: dict) -> None:
         global _current_turn

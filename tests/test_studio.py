@@ -6,6 +6,7 @@ import shutil
 import sys
 import tempfile
 import threading
+import time
 import unittest
 import urllib.error
 import urllib.request
@@ -107,6 +108,16 @@ class TestApi(StudioBase):
 
 
 class TestChat(StudioBase):
+    def setUp(self):
+        self.wait_idle()
+
+    def wait_idle(self):
+        for _ in range(200):
+            if not json.loads(self.get("/api/chat/state")[1])["running"]:
+                return
+            time.sleep(0.05)
+        self.fail("a turn never finished")
+
     def stream(self, message):
         req = urllib.request.Request(f"http://127.0.0.1:{self.port}/api/chat", method="POST",
                                      data=json.dumps({"message": message, "shot": "blockout_example"}).encode(),
@@ -129,6 +140,36 @@ class TestChat(StudioBase):
         events = self.stream("again")
         self.assertEqual(events[0]["session_id"], "sess-fake-0001")
         self.assertEqual(claude_runner.load_state()["turns"], 2)
+
+    def test_turn_survives_a_disconnected_client(self):
+        self.post("/api/chat/reset")
+        # start a turn and abandon the stream immediately
+        req = urllib.request.Request(f"http://127.0.0.1:{self.port}/api/chat", method="POST",
+                                     data=json.dumps({"message": "hi", "shot": "blockout_example"}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req).close()
+        state = {"running": True, "events": 0}
+        for _ in range(200):
+            state = json.loads(self.get("/api/chat/state")[1])
+            if not state["running"] and state["events"]:
+                break
+            time.sleep(0.05)
+        # the turn ran to completion even though nobody was listening
+        self.assertGreaterEqual(state["events"], 5)
+        code, body = self.post("/api/chat/attach", {"from": 0})
+        events = [json.loads(l[6:]) for l in body.decode().split("\n\n") if l.startswith("data: ")]
+        self.assertEqual([e["type"] for e in events][-1], "done")
+        self.assertIn("text", [e["type"] for e in events])
+
+    def test_second_turn_while_one_runs_is_refused(self):
+        self.post("/api/chat/reset")
+        req = urllib.request.Request(f"http://127.0.0.1:{self.port}/api/chat", method="POST",
+                                     data=json.dumps({"message": "a"}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req):
+            code, _ = self.post("/api/chat", {"message": "b"})
+            self.assertEqual(code, 409)
+        self.wait_idle()
 
     def test_command_never_carries_an_api_key(self):
         with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-should-not-leak"}):

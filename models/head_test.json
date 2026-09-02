@@ -1,0 +1,316 @@
+{
+  "version": "1.0",
+  "id": "head_test",
+  "kind": "prop",
+  "description": "Head builder default, isolated.",
+  "reference": null,
+  "height": null,
+  "parts": [
+    {
+      "id": "head",
+      "op": "head",
+      "parent": null,
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "height": 0.235,
+        "width": 0.155,
+        "depth": 0.205,
+        "segments": 48,
+        "rings": 40,
+        "brow": 0.9,
+        "socket": 0.8,
+        "cheek": 0.7,
+        "jaw": 0.8,
+        "chin": 0.7,
+        "temple": 0.4,
+        "age": 0.8,
+        "ears": 1.0,
+        "nose": {
+          "length": 0.028,
+          "width": 0.036,
+          "bridge": 0.7,
+          "hook": 0.4
+        }
+      }
+    },
+    {
+      "id": "eye_l",
+      "op": "primitive",
+      "parent": "head",
+      "material": "eye",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "head",
+        "point": "eye_l"
+      },
+      "params": {
+        "shape": "sphere",
+        "size": [
+          0.024,
+          0.024,
+          0.024
+        ],
+        "segments": 20
+      }
+    },
+    {
+      "id": "brow_l",
+      "op": "loft",
+      "parent": "head",
+      "material": "hair",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "head",
+        "point": "eye_l",
+        "offset": [
+          0,
+          -0.004,
+          0.021
+        ]
+      },
+      "params": {
+        "segments": 10,
+        "resolution": 2,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              -0.026,
+              0.006,
+              0.0
+            ],
+            "size": [
+              0.004,
+              0.003
+            ],
+            "roundness": 1.0
+          },
+          {
+            "position": [
+              0.0,
+              -0.002,
+              0.004
+            ],
+            "size": [
+              0.006,
+              0.004
+            ],
+            "roundness": 1.0
+          },
+          {
+            "position": [
+              0.026,
+              0.004,
+              0.001
+            ],
+            "size": [
+              0.004,
+              0.003
+            ],
+            "roundness": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "eye_r",
+      "op": "primitive",
+      "parent": "head",
+      "material": "eye",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "head",
+        "point": "eye_r"
+      },
+      "params": {
+        "shape": "sphere",
+        "size": [
+          0.024,
+          0.024,
+          0.024
+        ],
+        "segments": 20
+      }
+    },
+    {
+      "id": "brow_r",
+      "op": "loft",
+      "parent": "head",
+      "material": "hair",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "at": {
+        "part": "head",
+        "point": "eye_r",
+        "offset": [
+          0,
+          -0.004,
+          0.021
+        ]
+      },
+      "params": {
+        "segments": 10,
+        "resolution": 2,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              -0.026,
+              0.006,
+              0.0
+            ],
+            "size": [
+              0.004,
+              0.003
+            ],
+            "roundness": 1.0
+          },
+          {
+            "position": [
+              0.0,
+              -0.002,
+              0.004
+            ],
+            "size": [
+              0.006,
+              0.004
+            ],
+            "roundness": 1.0
+          },
+          {
+            "position": [
+              0.026,
+              0.004,
+              0.001
+            ],
+            "size": [
+              0.004,
+              0.003
+            ],
+            "roundness": 1.0
+          }
+        ]
+      }
+    }
+  ],
+  "materials": {
+    "skin": {
+      "base_color": [
+        0.66,
+        0.5,
+        0.42
+      ],
+      "roughness": 0.6,
+      "subsurface": 0.12
+    },
+    "eye": {
+      "base_color": [
+        0.42,
+        0.44,
+        0.42
+      ],
+      "roughness": 0.15,
+      "specular": 0.9
+    },
+    "hair": {
+      "base_color": [
+        0.82,
+        0.82,
+        0.8
+      ],
+      "roughness": 0.8
+    }
+  },
+  "landmarks": {
+    "eye_L": {
+      "part": "head",
+      "anchor": "point:eye_l"
+    }
+  },
+  "skeleton": null
+}

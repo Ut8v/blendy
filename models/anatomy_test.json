@@ -1,0 +1,234 @@
+{
+  "version": "1.0",
+  "id": "anatomy_test",
+  "kind": "prop",
+  "description": "Builder check: head, hand, lofted torso.",
+  "reference": null,
+  "height": null,
+  "parts": [
+    {
+      "id": "head",
+      "op": "head",
+      "parent": null,
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          1.55
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "height": 0.235,
+        "width": 0.155,
+        "depth": 0.205,
+        "segments": 40,
+        "rings": 32,
+        "brow": 0.9,
+        "socket": 0.8,
+        "cheek": 0.7,
+        "jaw": 0.8,
+        "chin": 0.7,
+        "temple": 0.4,
+        "age": 0.8,
+        "ears": 1.0,
+        "nose": {
+          "length": 0.028,
+          "width": 0.036,
+          "bridge": 0.7,
+          "hook": 0.4
+        }
+      }
+    },
+    {
+      "id": "torso",
+      "op": "loft",
+      "parent": null,
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0,
+          0,
+          0
+        ],
+        "rotation_euler": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "segments": 32,
+        "resolution": 4,
+        "caps": true,
+        "path": [
+          {
+            "position": [
+              0,
+              0,
+              0.92
+            ],
+            "size": [
+              0.155,
+              0.105
+            ],
+            "roundness": 1.25
+          },
+          {
+            "position": [
+              0,
+              -0.005,
+              1.05
+            ],
+            "size": [
+              0.15,
+              0.1
+            ],
+            "roundness": 1.3
+          },
+          {
+            "position": [
+              0,
+              -0.01,
+              1.16
+            ],
+            "size": [
+              0.17,
+              0.108
+            ],
+            "roundness": 1.35
+          },
+          {
+            "position": [
+              0,
+              -0.015,
+              1.3
+            ],
+            "size": [
+              0.205,
+              0.118
+            ],
+            "roundness": 1.4
+          },
+          {
+            "position": [
+              0,
+              -0.01,
+              1.42
+            ],
+            "size": [
+              0.215,
+              0.12
+            ],
+            "roundness": 1.35
+          },
+          {
+            "position": [
+              0,
+              0,
+              1.48
+            ],
+            "size": [
+              0.15,
+              0.105
+            ],
+            "roundness": 1.2
+          },
+          {
+            "position": [
+              0,
+              0,
+              1.55
+            ],
+            "size": [
+              0.062,
+              0.058
+            ],
+            "roundness": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "hand_l",
+      "op": "hand",
+      "parent": null,
+      "material": "skin",
+      "modifiers": [],
+      "transform": {
+        "location": [
+          0.34,
+          0,
+          0.9
+        ],
+        "rotation_euler": [
+          3.14159,
+          0,
+          0
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "params": {
+        "length": 0.19,
+        "width": 0.09,
+        "thickness": 0.034,
+        "curl": 0.3,
+        "spread": 0.12,
+        "thumb": 1.0,
+        "side": "l",
+        "segments": 14
+      }
+    }
+  ],
+  "materials": {
+    "skin": {
+      "base_color": [
+        0.62,
+        0.45,
+        0.36
+      ],
+      "roughness": 0.55,
+      "subsurface": 0.15
+    }
+  },
+  "landmarks": {
+    "eye_L": {
+      "part": "head",
+      "anchor": "point:eye_l"
+    },
+    "eye_R": {
+      "part": "head",
+      "anchor": "point:eye_r"
+    },
+    "chin": {
+      "part": "head",
+      "anchor": "point:chin"
+    },
+    "fingertip_L": {
+      "part": "hand_l",
+      "anchor": "point:fingertip"
+    }
+  },
+  "skeleton": null
+}

@@ -1,0 +1,96 @@
+{
+  "profile_version": 1,
+  "model_id": "anatomy_test",
+  "source": "model",
+  "ref": "anatomy_test",
+  "class": "prop",
+  "measure": {
+    "bbox_min": [
+      -0.2150000035762787,
+      -0.1706942617893219,
+      0.7344915270805359
+    ],
+    "bbox_max": [
+      0.39572998881340027,
+      0.11107994616031647,
+      1.784999966621399
+    ],
+    "dimensions": [
+      0.610729992389679,
+      0.28177422285079956,
+      1.0505084991455078
+    ],
+    "poly_count": 2992
+  },
+  "height": 1.0505084991455078,
+  "declared_height": null,
+  "landmarks": {
+    "eye_L": {
+      "kind": "socket",
+      "position": [
+        0.05115000158548355,
+        -0.10774874687194824,
+        1.6686749458312988
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "head"
+    },
+    "eye_R": {
+      "kind": "socket",
+      "position": [
+        -0.05115000158548355,
+        -0.10774874687194824,
+        1.6686749458312988
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "head"
+    },
+    "chin": {
+      "kind": "socket",
+      "position": [
+        0.0,
+        -0.08751650154590607,
+        1.5617499351501465
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "head"
+    },
+    "fingertip_L": {
+      "kind": "socket",
+      "position": [
+        0.3400000035762787,
+        0.02536838687956333,
+        0.7365999221801758
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "part": "hand_l"
+    }
+  },
+  "parts": [
+    "head",
+    "torso",
+    "hand_l"
+  ],
+  "flags": {
+    "generated": false,
+    "rig_ok": true,
+    "has_armature": false
+  },
+  "built_at": 1788307854.264779
+}

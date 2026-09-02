@@ -110,9 +110,27 @@ Adding a builder is the normal way to extend the system. See
 
 ## Reference images
 
-Reference images are the author's own input and are not redistributed. Point a
-model recipe's `reference` field at your own file under `assets/references/`,
-which is gitignored.
+Reference images are the author's own input and are not redistributed, so
+`assets/references/` is gitignored and ships empty. `models/haldin.json` points
+its `reference` field at a file that is not in this repository.
+
+The recipe still builds: geometry comes from the recipe, not the image, and the
+turntable renders every view. It just omits the side-by-side panel, because that
+is the one thing that needs the reference. So you can compile Haldin and look at
+him; you cannot rerun the comparison the modeling agent was iterating against.
+
+To model your own character, put an image under `assets/references/` and point a
+recipe at it:
+
+```json
+{ "id": "your_character", "kind": "character",
+  "reference": "assets/references/your_character.png",
+  "height": 1.8, "parts": [] }
+```
+
+One clear image is enough to start. The modeling agent works from a front view
+and a description, and iterates against the turntable rather than the image
+alone.
 
 ## License
 

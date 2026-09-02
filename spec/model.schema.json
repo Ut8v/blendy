@@ -237,7 +237,20 @@
         "taper": {"type": "number", "minimum": 0, "maximum": 1},
         "direction": {"$ref": "#/$defs/vec3"},
         "region": {"$ref": "#/$defs/region"},
-        "seed": {"type": "integer"}
+        "seed": {"type": "integer"},
+        "avoid": {
+          "type": "array",
+          "description": "Keep-out spheres in the emitter's local space. Strands are pushed out of them, so hair cannot fall across the face.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["center", "radius"],
+            "properties": {
+              "center": {"$ref": "#/$defs/vec3"},
+              "radius": {"type": "number", "exclusiveMinimum": 0}
+            }
+          }
+        }
       }
     },
     "modifier": {
@@ -476,6 +489,17 @@
               }
             }
           ]
+        },
+        "lids": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Eyelid rims around the socket. Without them an eyeball reads as a ball stuck on a face."
+        },
+        "eye_radius": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Radius of the eyeball the recipe will place at point:eye_l/eye_r. The lid shells are sized from it."
         }
       }
     },

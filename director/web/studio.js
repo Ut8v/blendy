@@ -3,6 +3,7 @@ import { Chat } from './chat.js';
 import { renderPanel, renderPreviews, renderRenders } from './panels.js';
 import { mountDirector } from './director.js';
 import { mountModels } from './models.js';
+import { mountActivity, watchJob } from './activity.js';
 
 const $ = id => document.getElementById(id);
 export const api = {
@@ -11,7 +12,7 @@ export const api = {
 };
 
 export const studio = { shot: null, overview: null, info: null, director: null, chat: null,
-  models: null, modelDetail: null, activeTab: 'previews',
+  models: null, modelDetail: null, activity: null, activeTab: 'previews',
   select: id => selectShot(id), refresh: () => refreshShot(), overviewRefresh: () => refreshOverview(),
   renderInspector: mode => renderPanel(studio, api, mode) };
 
@@ -51,14 +52,22 @@ export async function refreshShot() { if (studio.shot) await selectShot(studio.s
 
 async function runAction(action, args) {
   if (!studio.shot) return;
-  const status = $('actionStatus');
+  const status = action === 'export_proxy' ? $('directorStatus') : $('actionStatus');
   status.textContent = `${action}…`;
   try {
     const r = await api.post('/api/action', { shot: studio.shot, action, args: args || {} });
-    status.textContent = r.ok === false ? `${action} failed at ${r.stage}${r.entity_id ? ' · ' + r.entity_id : ''}: ${(r.error || '').split('\n')[0]}`
-      : (r.error ? r.error : `${action} ok${r.seconds ? ` (${r.seconds}s)` : ''}`);
-    if (r.errors && r.errors.length) status.textContent = r.errors.map(e => `${e.code} @ ${e.entity_id || e.path}`).join('; ');
-    if (action === 'export_proxy') $('directorStatus').textContent = r.path ? (r.cached ? 'proxy up to date' : 'proxy exported') : status.textContent;
+    if (r.job) {
+      studio.activity?.poll();
+      const job = await watchJob(api, r.job, status, action);
+      const res = job?.result || {};
+      status.textContent = job && job.ok
+        ? `${action} ok · ${job.seconds}s`
+        : `${action} failed${res.stage ? ' at ' + res.stage : ''}${res.entity_id ? ' · ' + res.entity_id : ''}: ${(job?.error || '').split('\n')[0]}`;
+    } else if (r.errors && r.errors.length) {
+      status.textContent = r.errors.map(e => `${e.code} @ ${e.entity_id || e.path}`).join('; ');
+    } else {
+      status.textContent = r.ok === false ? (r.error || 'failed') : `${action} ok`;
+    }
   } catch (e) { status.textContent = e.message; }
   await refreshShot();
 }
@@ -78,6 +87,7 @@ function wire() {
     renderPanel(studio, api, b.dataset.tab === 'models' ? 'model' : 'shot');
     try {
       if (b.dataset.tab === 'models' && studio.models) studio.models.refresh();
+      if (b.dataset.tab === 'activity' && studio.activity) studio.activity.paint();
       if (b.dataset.tab === 'director' && !studio.director) {
         studio.director = mountDirector($('director-view'), $('frame'), api, studio);
         studio.director.load(studio.info);
@@ -93,6 +103,7 @@ function wire() {
 
 wire();
 studio.chat = new Chat($('messages'), $('composer'), $('input'), $('send'), $('stop'), $('turnStatus'), $('quick'), studio, refreshShot);
+studio.activity = mountActivity(api, studio);
 studio.models = mountModels(api, studio);
 studio.models.refresh().catch(e => console.error('models', e));
 studio.chat.attach();

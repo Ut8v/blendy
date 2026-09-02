@@ -1,6 +1,8 @@
 // Models tab: the recipes the modeling agent builds, their turntables, and a rebuild button.
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+import { watchJob } from './activity.js';
+
 const ORDER = ['compare', 'front', 'three_quarter', 'side', 'back', 'head'];
 
 export function mountModels(api, studio) {
@@ -52,9 +54,12 @@ export function mountModels(api, studio) {
     try {
       const r = await api.post('/api/action', { action: 'preview_model',
         args: { model: m.id, quality: $('modelQuality').value } });
-      status.textContent = r.ok === false || r.ok === undefined && r.errors
-        ? `failed: ${(r.error || (r.errors || []).map(e => e.code + ' @ ' + (e.entity_id || e.path)).join('; '))}`
-        : `built in ${r.seconds}s · ${r.height ? r.height.toFixed(3) + 'm' : ''} · ${r.poly_count} polys`;
+      studio.activity?.poll();
+      const job = await watchJob(api, r.job, status, `building ${m.id}`);
+      const res = (job && job.result) || {};
+      status.textContent = job && job.ok
+        ? `built in ${job.seconds}s · ${res.height ? res.height.toFixed(3) + ' m' : ''} · ${res.poly_count || '?'} polys`
+        : `failed: ${job ? job.error : 'no job'}`;
     } catch (e) { status.textContent = e.message; }
     await refresh();
   }

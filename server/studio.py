@@ -14,6 +14,7 @@ import os
 import re
 import sys
 import threading
+import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -31,7 +32,49 @@ WEB = ROOT / "director" / "web"
 SERVABLE = ("preview", "renders", "director/proxies", "evals/results", "evals/references",
             "assets/references")
 _turn_lock = threading.Lock()
-_current_turn: claude_runner.ClaudeTurn | None = None
+
+
+class Turn:
+    """A headless Claude turn that outlives the browser.
+
+    Modeling runs take half an hour; a page reload must not kill one. The turn
+    runs on its own thread into a buffer, and any number of clients attach to
+    that buffer and replay from wherever they left off.
+    """
+
+    def __init__(self, message: str, session_id: str | None, shot: str | None, agent: str | None):
+        self.events: list[dict] = []
+        self.done = False
+        self.shot = shot
+        self._lock = threading.Lock()
+        self._turn = claude_runner.ClaudeTurn(message, session_id, shot, agent)
+        threading.Thread(target=self._run, daemon=True).start()
+
+    def _run(self) -> None:
+        try:
+            for event in self._turn.events():
+                with self._lock:
+                    self.events.append(event)
+        except Exception as e:  # noqa: BLE001
+            with self._lock:
+                self.events.append({"type": "error", "text": f"{type(e).__name__}: {e}"})
+        state = claude_runner.load_state()
+        state.update({"session_id": self._turn.session_id, "shot": self.shot,
+                      "turns": state.get("turns", 0) + 1})
+        claude_runner.save_state(state)
+        with self._lock:
+            self.events.append({"type": "done"})
+            self.done = True
+
+    def since(self, index: int) -> list[dict]:
+        with self._lock:
+            return self.events[index:]
+
+    def stop(self) -> None:
+        self._turn.stop()
+
+
+_current_turn: Turn | None = None
 
 
 def _shots() -> list[dict]:
@@ -173,6 +216,11 @@ class Handler(SimpleHTTPRequestHandler):
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
         if url.path == "/api/overview":
             return self._safe(_overview)
+        if url.path == "/api/chat/state":
+            t = _current_turn
+            return self._json(200, {"running": bool(t and not t.done),
+                                    "events": len(t.events) if t else 0,
+                                    **claude_runner.load_state()})
         if url.path == "/api/models":
             return self._safe(_models)
         if url.path == "/api/model":
@@ -206,8 +254,9 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/chat":
             return self._chat(self._body())
+        if path == "/api/chat/attach":
+            return self._stream(int(self._body().get("from", 0)))
         if path == "/api/chat/stop":
-            global _current_turn
             if _current_turn:
                 _current_turn.stop()
             return self._json(200, {"stopped": True})
@@ -270,30 +319,36 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _chat(self, b: dict) -> None:
         global _current_turn
-        if not _turn_lock.acquire(blocking=False):
-            return self._json(409, {"error": "a turn is already running"})
-        try:
+        with _turn_lock:
+            if _current_turn and not _current_turn.done:
+                return self._json(409, {"error": "a turn is already running; attach to it instead"})
             state = claude_runner.load_state()
             shot = b.get("shot") or state.get("shot")
-            turn = claude_runner.ClaudeTurn(b["message"], state.get("session_id"), shot, b.get("agent"))
-            _current_turn = turn
-            self.send_response(200)
-            self.send_header("Content-Type", "text/event-stream")
-            self.send_header("Cache-Control", "no-cache")
-            self.end_headers()
-            for event in turn.events():
-                self.wfile.write(f"data: {json.dumps(event)}\n\n".encode())
+            _current_turn = Turn(b["message"], state.get("session_id"), shot, b.get("agent"))
+        self._stream(0)
+
+    def _stream(self, start: int) -> None:
+        """Replay a running turn's events as SSE. Disconnecting does not stop it."""
+        turn = _current_turn
+        if turn is None:
+            return self._json(204, {})
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        i = start
+        try:
+            while True:
+                batch = turn.since(i)
+                for event in batch:
+                    self.wfile.write(f"data: {json.dumps(event)}\n\n".encode())
+                    i += 1
                 self.wfile.flush()
-            state.update({"session_id": turn.session_id, "shot": shot, "turns": state.get("turns", 0) + 1})
-            claude_runner.save_state(state)
-            self.wfile.write(b"data: {\"type\": \"done\"}\n\n")
-            self.wfile.flush()
+                if turn.done and i >= len(turn.events):
+                    return
+                time.sleep(0.15)
         except (BrokenPipeError, ConnectionResetError):
-            if _current_turn:
-                _current_turn.stop()
-        finally:
-            _current_turn = None
-            _turn_lock.release()
+            return          # the browser went away; the turn keeps running
 
 
 def main() -> int:
@@ -302,11 +357,11 @@ def main() -> int:
     p.add_argument("--shot", default=None)
     a = p.parse_args()
     if a.shot:
-        st = claude_runner.load_state()
-        st["shot"] = a.shot
-        claude_runner.save_state(st)
+        state = claude_runner.load_state()
+        state["shot"] = a.shot
+        claude_runner.save_state(state)
     srv = ThreadingHTTPServer(("127.0.0.1", a.port), Handler)
-    print(f"Blendy Studio: http://127.0.0.1:{a.port}/")
+    print(f"Blendy Studio: http://127.0.0.1:{a.port}/", flush=True)
     srv.serve_forever()
     return 0
 

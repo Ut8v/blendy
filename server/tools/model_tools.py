@@ -140,3 +140,56 @@ def restore_model(model_id: str, label: str) -> dict[str, Any]:
         raise FileNotFoundError(f"no checkpoint '{label}' for model '{model_id}'")
     shutil.copyfile(matches[-1], _path(model_id))
     return {"restored": str(matches[-1])}
+
+
+def mark_reference(model_id: str, points: dict[str, list[float]]) -> dict[str, Any]:
+    """Record where the reference image's landmarks are, so the model can be
+    measured against it.
+
+    Look at the reference and give normalized coordinates: [0,0] is the top
+    left of the image, [1,1] the bottom right. Required: head_top, chin, eye,
+    shoulder_l, shoulder_r, ground. Optional and worth adding when the image
+    shows them clearly: hip, ear_l, ear_r, hand_l, hand_r, knee.
+
+    Mark shoulder_l/r where the arm meets the torso, NOT the outer edge of the
+    silhouette: the model's own shoulder landmark is the joint, and marking the
+    deltoid instead makes every model look too narrow. Left and right are the
+    character's own, so shoulder_l is on the viewer's right.
+
+    Rejected if the points cannot be measured, e.g. a chin above the crown.
+    """
+    model = _load(model_id)
+    model["reference_points"] = {k: list(v) for k, v in points.items()}
+    result = validate_model(model)
+    if not result.ok:
+        return {"ok": False, "errors": [i.as_dict() for i in result.issues if i.level == "error"]}
+    _save(model)
+    return {"ok": True, "points": model["reference_points"],
+            "next": "compare_to_reference to see where the model disagrees"}
+
+
+def compare_to_reference(model_id: str) -> dict[str, Any]:
+    """Proportions of the built model against the marked reference, as a table.
+
+    Every row is a scale-invariant ratio, so framing and size cannot confound
+    it. 'strong' means fix that before anything else; 'ok' is inside the noise
+    of marking points by eye and is not worth a turn.
+
+    Needs mark_reference first, and a built model (preview_model writes the
+    profile this reads).
+    """
+    from compiler.proportions import compare, measure, model_points, summarize
+
+    model = _load(model_id)
+    marked = model.get("reference_points")
+    if not marked:
+        raise ValueError(f"'{model_id}' has no reference_points; call mark_reference first")
+    profile_path = MODEL_PROFILES_DIR / f"{model_id}.json"
+    if not profile_path.exists():
+        raise FileNotFoundError(f"model '{model_id}' is not built yet; preview_model first")
+
+    built = model_points(load_json(profile_path))
+    rows = compare(marked, built)
+    return {"model_id": model_id, "reference": model.get("reference"),
+            "rows": rows, "table": summarize(rows),
+            "model_measures": measure(built)}

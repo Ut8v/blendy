@@ -2,7 +2,9 @@
 """Stand-in for the `claude` CLI in tests: echoes its argv as stream-json events,
 including a tool_use + tool_result pair pointing at a preview image."""
 import json
+import os
 import sys
+import time
 
 args = sys.argv[1:]
 msg = args[args.index("-p") + 1] if "-p" in args else ""
@@ -20,5 +22,17 @@ ev = [
     {"type": "result", "subtype": "success", "session_id": sid, "result": "done",
      "is_error": False, "total_cost_usd": 0.0, "duration_ms": 5, "argv": args},
 ]
-for e in ev:
+print(json.dumps(ev[0]), flush=True)
+
+# FAKE_CLAUDE_HOLD names a file that does not exist yet. Block until it appears,
+# so a test can be certain a turn is still running when it makes its next
+# request. Without this the fake finishes in milliseconds and any test about
+# concurrent turns is a race it usually, but not always, wins.
+hold = os.environ.get("FAKE_CLAUDE_HOLD")
+if hold:
+    deadline = time.time() + 30
+    while not os.path.exists(hold) and time.time() < deadline:
+        time.sleep(0.01)
+
+for e in ev[1:]:
     print(json.dumps(e), flush=True)

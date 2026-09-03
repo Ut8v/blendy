@@ -206,14 +206,31 @@ class TestChat(StudioBase):
         self.assertIn("text", [e["type"] for e in events])
 
     def test_second_turn_while_one_runs_is_refused(self):
+        """One writer at a time. The first turn is pinned open with a hold file
+        rather than left to chance: the fake finishes in milliseconds, so
+        without this the assertion is a race that usually passes."""
         self.post("/api/chat/reset")
-        req = urllib.request.Request(f"http://127.0.0.1:{self.port}/api/chat", method="POST",
-                                     data=json.dumps({"message": "a"}).encode(),
-                                     headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req):
-            code, _ = self.post("/api/chat", {"message": "b"})
-            self.assertEqual(code, 409)
-        self.wait_idle()
+        with tempfile.TemporaryDirectory() as tmp:
+            release = os.path.join(tmp, "release")
+            with mock.patch.dict(os.environ, {"FAKE_CLAUDE_HOLD": release}):
+                req = urllib.request.Request(
+                    f"http://127.0.0.1:{self.port}/api/chat", method="POST",
+                    data=json.dumps({"message": "a"}).encode(),
+                    headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(req):
+                    for _ in range(200):
+                        if json.loads(self.get("/api/chat/state")[1])["running"]:
+                            break
+                        time.sleep(0.05)
+                    else:
+                        self.fail("first turn never started")
+                    code, _ = self.post("/api/chat", {"message": "b"})
+                    self.assertEqual(code, 409)
+                    open(release, "w").close()
+                # Drain before the temp directory goes away: the fake polls for
+                # the release file, so deleting it out from under a still-held
+                # turn leaves that turn waiting for its full timeout.
+                self.wait_idle()
 
     def test_command_never_carries_an_api_key(self):
         with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-should-not-leak"}):

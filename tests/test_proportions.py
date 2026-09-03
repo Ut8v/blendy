@@ -5,7 +5,8 @@ import unittest
 from pathlib import Path
 
 from compiler.proportions import (NOTABLE, ProportionError, compare, measure,
-                                  model_points, summarize, validate_points)
+                                  model_points, png_size, summarize,
+                                  to_isotropic, validate_points)
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -136,10 +137,83 @@ class TestValidatePoints(unittest.TestCase):
         problems = validate_points(dict(IDEAL, elbow=(0.5, 0.3)))
         self.assertTrue(any("unknown point" in p for p in problems), problems)
 
-    def test_lists_every_missing_required_point(self):
+    def test_reports_the_missing_required_point(self):
         problems = validate_points({"head_top": (0.5, 0.0)})
-        self.assertGreaterEqual(len(problems), 5)
+        self.assertTrue(any("chin" in p for p in problems), problems)
+
+    def test_head_and_chin_alone_are_enough(self):
+        """A tightly cropped portrait must still be markable."""
+        self.assertEqual(
+            validate_points({"head_top": (0.5, 0.1), "chin": (0.5, 0.3)}), [])
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestAspectCorrection(unittest.TestCase):
+    """Normalized coordinates divide x by width and y by height. On a portrait
+    crop that is a 25% distortion on any width-against-height ratio, which is
+    larger than the threshold at which the agent is told to go fix something."""
+
+    def test_isotropic_conversion_scales_x_only(self):
+        pts = to_isotropic({"a": (1.0, 1.0)}, 800, 1000)
+        self.assertAlmostEqual(pts["a"][0], 0.8)
+        self.assertAlmostEqual(pts["a"][1], 1.0)
+
+    def test_uncorrected_points_measure_wrong_by_the_aspect(self):
+        raw = {"head_top": (0.5, 0.10), "chin": (0.5, 0.20),
+               "shoulder_l": (0.65, 0.30), "shoulder_r": (0.35, 0.30)}
+        wrong = measure(raw)["shoulder_span_heads"]
+        right = measure(to_isotropic(raw, 800, 1000))["shoulder_span_heads"]
+        self.assertAlmostEqual(right / wrong, 0.8, places=6)
+
+    def test_square_image_is_a_no_op(self):
+        raw = {"head_top": (0.5, 0.1), "chin": (0.5, 0.2)}
+        self.assertEqual(to_isotropic(raw, 512, 512), {k: tuple(v) for k, v in raw.items()})
+
+    def test_zero_size_raises(self):
+        with self.assertRaises(ProportionError):
+            to_isotropic({"a": (0.5, 0.5)}, 0, 100)
+
+
+class TestPartialReference(unittest.TestCase):
+    """A reference cropped above the feet is the normal case, not an error."""
+
+    CROPPED = {"head_top": (0.5, 0.05), "chin": (0.5, 0.18), "eye": (0.5, 0.12),
+               "shoulder_l": (0.68, 0.34), "shoulder_r": (0.32, 0.34),
+               "ear_l": (0.55, 0.12), "ear_r": (0.45, 0.12)}
+
+    def test_yields_head_and_shoulder_measures_without_ground(self):
+        m = measure(self.CROPPED)
+        for key in ("eye_line", "head_aspect", "shoulder_span_heads",
+                    "shoulder_span_head_widths", "shoulder_drop_heads"):
+            self.assertIn(key, m)
+
+    def test_omits_every_height_measure(self):
+        m = measure(self.CROPPED)
+        for key in ("heads_tall", "hip_height_frac", "knee_height_frac"):
+            self.assertNotIn(key, m)
+
+    def test_comparison_reports_what_it_could_not_measure(self):
+        profile = json.loads((ROOT / "profiles" / "models" / "haldin.json").read_text())
+        built = model_points(profile)
+        rows = compare(self.CROPPED, built)
+        names = {r["measure"] for r in rows}
+        self.assertNotIn("heads_tall", names)
+        self.assertIn("shoulder_span_heads", names)
+        skipped = sorted(set(measure(built)) - names)
+        self.assertIn("heads_tall", skipped)
+        self.assertIn("heads_tall", summarize(rows, skipped))
+
+
+class TestPngSize(unittest.TestCase):
+    def test_reads_the_header(self):
+        ref = ROOT / "assets" / "references" / "haldin.png"
+        if not ref.exists():
+            self.skipTest("reference image is local-only and gitignored")
+        self.assertEqual(png_size(str(ref)), (1122, 1402))
+
+    def test_refuses_a_non_png_rather_than_guessing(self):
+        with self.assertRaises(ProportionError):
+            png_size(str(ROOT / "README.md"))

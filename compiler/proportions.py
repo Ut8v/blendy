@@ -9,8 +9,22 @@ side is marked on the image by the agent, in normalized coordinates. The model
 side is its own landmarks projected to the front view. One measurement function
 then runs over either, so the two are guaranteed to be computed the same way.
 
+Two things this gets right that are easy to get wrong:
+
+Aspect. Normalized image coordinates divide x by width and y by height, so on
+any non-square image a horizontal distance and a vertical one are in different
+units. Comparing shoulder span to head height without correcting for that is
+wrong by the aspect ratio, which on a portrait crop is 25% — larger than the
+threshold at which this module tells an agent to go and fix something. Marked
+points are therefore converted to isotropic units at the boundary.
+
+Partial references. A reference is often a portrait crop with no feet in frame.
+Only head_top and chin are required, because they define the measuring unit;
+every other measure is emitted only when its inputs are actually present. A
+missing ground plane costs you the height ratios and nothing else.
+
 Image convention throughout: x increases right, y increases DOWN, because that
-is how the marked points arrive. Model landmarks are Z-up world space and get
+is how marked points arrive. Model landmarks are Z-up world space and get
 flipped on the way in.
 
 No bpy here: this runs in CI, in the server, and inside Blender alike.
@@ -23,16 +37,14 @@ from typing import Iterable, Mapping, Sequence
 Point = Sequence[float]
 Points = Mapping[str, Point]
 
-# What the agent marks on the reference image. The first six are required
-# because every ratio below depends on at least one of them; the rest sharpen
-# the comparison when the reference actually shows them.
-REQUIRED_POINTS = ("head_top", "chin", "eye", "shoulder_l", "shoulder_r", "ground")
-OPTIONAL_POINTS = ("hip", "ear_l", "ear_r", "hand_l", "hand_r", "knee")
+# Head height is the unit every ratio is expressed in, so these two are the
+# only points without which nothing can be measured at all.
+REQUIRED_POINTS = ("head_top", "chin")
+OPTIONAL_POINTS = ("eye", "shoulder_l", "shoulder_r", "ground", "hip",
+                   "ear_l", "ear_r", "hand_l", "hand_r", "knee")
 REFERENCE_POINTS = REQUIRED_POINTS + OPTIONAL_POINTS
 
 # How each landmark in a model profile maps onto the marked-point vocabulary.
-# ground_contact is the origin plane rather than a mesh feature, which is why
-# it is the one the model always has and the reference has to be told.
 _FROM_LANDMARK = {
     "head_top": "head_top", "chin": "chin", "eye_midpoint": "eye",
     "shoulder_L": "shoulder_l", "shoulder_R": "shoulder_r",
@@ -46,11 +58,25 @@ class ProportionError(ValueError):
     number that looks like a measurement and is not."""
 
 
+def to_isotropic(points: Points, width: float, height: float) -> dict[str, tuple[float, float]]:
+    """Put marked points into units where x and y are the same length.
+
+    Normalized coordinates are x/width and y/height. Scaling x by width/height
+    expresses both in units of image height, which is what makes a horizontal
+    span comparable to a vertical one.
+    """
+    if width <= 0 or height <= 0:
+        raise ProportionError(f"image size must be positive, got {width}x{height}")
+    aspect = float(width) / float(height)
+    return {k: (float(p[0]) * aspect, float(p[1])) for k, p in points.items()}
+
+
 def model_points(profile: Mapping) -> dict[str, tuple[float, float]]:
-    """Project a model profile's landmarks into front-view image coordinates.
+    """Project a model profile's landmarks into front-view coordinates.
 
     Front view looks down -Y, so world x is image x and world z is image y with
-    the sign flipped. Scale is irrelevant: every ratio below divides it out.
+    the sign flipped. World space is already isotropic — both axes are meters —
+    so no aspect correction applies here.
     """
     landmarks = profile.get("landmarks") or {}
     points: dict[str, tuple[float, float]] = {}
@@ -63,74 +89,86 @@ def model_points(profile: Mapping) -> dict[str, tuple[float, float]]:
     return points
 
 
-def _need(points: Points, *names: str) -> list[tuple[float, float]]:
+def _get(points: Points, *names: str):
+    """Every named point, or None if any is absent. Optional measures use this
+    so that a partial reference yields fewer rows rather than invented ones."""
     out = []
     for name in names:
         p = points.get(name)
         if p is None:
-            raise ProportionError(f"missing point '{name}'")
+            return None
         out.append((float(p[0]), float(p[1])))
     return out
 
 
 def measure(points: Points) -> dict[str, float]:
-    """Scale-invariant proportions from marked points.
+    """Scale-invariant proportions from points already in isotropic units.
 
-    Every value is a ratio, so a reference photographed at any size and a model
-    built at any height produce directly comparable numbers.
+    Only head_top and chin are needed. Everything else is emitted when it can
+    be, so a portrait crop and a full figure both produce usable output.
     """
-    (head_top, chin, eye, shoulder_l, shoulder_r, ground) = _need(
-        points, *REQUIRED_POINTS)
+    required = _get(points, *REQUIRED_POINTS)
+    if required is None:
+        missing = [n for n in REQUIRED_POINTS if n not in points]
+        raise ProportionError(f"missing required point(s): {', '.join(missing)}")
+    head_top, chin = required
 
     head_h = chin[1] - head_top[1]
-    total_h = ground[1] - head_top[1]
     if head_h <= 0:
-        raise ProportionError("chin must sit below head_top in image coordinates")
-    if total_h <= 0:
-        raise ProportionError("ground must sit below head_top in image coordinates")
+        raise ProportionError(
+            "chin must sit below head_top in image coordinates; these look marked "
+            "upside down, which would make every ratio below plausible and wrong")
 
-    shoulder_span = abs(shoulder_l[0] - shoulder_r[0])
-    shoulder_y = (shoulder_l[1] + shoulder_r[1]) / 2
-    out = {
-        # The classic figure-drawing measure. Realistic adults land near 7.5;
-        # heroic proportion runs to 8, and much past that reads as elongated.
-        "heads_tall": total_h / head_h,
-        # Where the eyes sit within the skull. Life is close to 0.5, and a
-        # value well under that is the single commonest beginner error.
-        "eye_line": (eye[1] - head_top[1]) / head_h,
-        "shoulder_span_heads": shoulder_span / head_h,
-        # How far the shoulder line sits below the crown, as a fraction of the
-        # whole figure. Catches a neck that is too long, which reads as frail.
-        "shoulder_height_frac": (shoulder_y - head_top[1]) / total_h,
-    }
+    out: dict[str, float] = {}
 
-    hip = points.get("hip")
-    if hip is not None:
-        out["hip_height_frac"] = (ground[1] - float(hip[1])) / total_h
+    if (p := _get(points, "eye")) is not None:
+        # Where the eyes sit within the skull. Life is close to 0.5, and well
+        # under that is the single commonest beginner error.
+        out["eye_line"] = (p[0][1] - head_top[1]) / head_h
 
-    ear_l, ear_r = points.get("ear_l"), points.get("ear_r")
-    if ear_l is not None and ear_r is not None:
-        head_w = abs(float(ear_l[0]) - float(ear_r[0]))
+    if (p := _get(points, "ear_l", "ear_r")) is not None:
+        head_w = abs(p[0][0] - p[1][0])
         if head_w > 0:
             out["head_aspect"] = head_h / head_w
-            out["shoulder_span_head_widths"] = shoulder_span / head_w
+
+    shoulders = _get(points, "shoulder_l", "shoulder_r")
+    if shoulders is not None:
+        span = abs(shoulders[0][0] - shoulders[1][0])
+        shoulder_y = (shoulders[0][1] + shoulders[1][1]) / 2
+        out["shoulder_span_heads"] = span / head_h
+        # How far the shoulder line sits below the crown, in head heights.
+        # Expressed against the head rather than total height so it survives a
+        # reference that is cropped above the feet.
+        out["shoulder_drop_heads"] = (shoulder_y - head_top[1]) / head_h
+        if "head_aspect" in out:
+            head_w = head_h / out["head_aspect"]
+            out["shoulder_span_head_widths"] = span / head_w
+
+    ground = _get(points, "ground")
+    if ground is not None:
+        total_h = ground[0][1] - head_top[1]
+        if total_h <= 0:
+            raise ProportionError("ground must sit below head_top in image coordinates")
+        # The classic figure-drawing measure. Realistic adults land near 7.5;
+        # heroic runs to 8, and much past that reads as elongated.
+        out["heads_tall"] = total_h / head_h
+        if (p := _get(points, "hip")) is not None:
+            out["hip_height_frac"] = (ground[0][1] - p[0][1]) / total_h
+        if (p := _get(points, "knee")) is not None:
+            out["knee_height_frac"] = (ground[0][1] - p[0][1]) / total_h
 
     hands = [points.get("hand_l"), points.get("hand_r")]
     hands = [h for h in hands if h is not None]
-    if hands:
+    if hands and shoulders is not None:
         hand_y = sum(float(h[1]) for h in hands) / len(hands)
-        shoulder_y = (shoulder_l[1] + shoulder_r[1]) / 2
-        out["arm_drop_frac"] = (hand_y - shoulder_y) / total_h
-
-    knee = points.get("knee")
-    if knee is not None:
-        out["knee_height_frac"] = (ground[1] - float(knee[1])) / total_h
+        shoulder_y = (shoulders[0][1] + shoulders[1][1]) / 2
+        out["arm_drop_heads"] = (hand_y - shoulder_y) / head_h
     return out
 
 
-# How far a ratio may drift before it is worth the agent's attention. These are
-# relative to the reference value. Anything under `notable` is inside the noise
-# of marking points on stylized artwork by eye, and chasing it wastes turns.
+# How far a ratio may drift before it is worth the agent's attention. Relative
+# to the reference value. Anything under `notable` is inside the noise of
+# marking points by eye on stylized artwork, and chasing it wastes turns.
 NOTABLE = 0.05
 STRONG = 0.12
 
@@ -138,8 +176,8 @@ STRONG = 0.12
 def compare(reference: Points, model: Points) -> list[dict]:
     """Row per shared measure, worst disagreement first.
 
-    Only measures both sides can produce are compared; a reference that does
-    not show the hands simply yields no arm row rather than a fabricated one.
+    Only measures both sides can produce are compared; a reference cropped
+    above the knees yields no height row rather than a fabricated one.
     """
     ref, mod = measure(reference), measure(model)
     rows = []
@@ -160,13 +198,14 @@ def compare(reference: Points, model: Points) -> list[dict]:
     return rows
 
 
-def summarize(rows: Iterable[Mapping]) -> str:
+def summarize(rows: Iterable[Mapping], skipped: Iterable[str] = ()) -> str:
     """A table the agent reads back after a build. Plain text on purpose: it
     goes into a tool result, and a rendered table survives that better than
     nested JSON the model has to reassemble."""
-    rows = list(rows)
+    rows, skipped = list(rows), list(skipped)
     if not rows:
-        return "no comparable measures: the reference is missing required points"
+        return ("no comparable measures: the reference needs at least head_top "
+                "and chin, plus one other point")
     width = max(len(str(r["measure"])) for r in rows)
     lines = [f"{'measure'.ljust(width)}  reference    model    delta   verdict",
              f"{'-' * width}  ---------  -------  -------   -------"]
@@ -180,7 +219,9 @@ def summarize(rows: Iterable[Mapping]) -> str:
     else:
         lines.append(
             f"\nWorst: {worst['measure']} is {'high' if worst['delta'] > 0 else 'low'} "
-            f"by {abs(worst['relative']) * 100:.0f}%. Fix that before anything else.")
+            f"by {worst['relative'] * 100:.0f}%. Fix that before anything else.")
+    if skipped:
+        lines.append(f"Not measurable from this reference: {', '.join(sorted(skipped))}.")
     return "\n".join(lines)
 
 
@@ -209,8 +250,24 @@ def validate_points(points: Points) -> list[str]:
                             "image; coordinates are normalized 0..1")
     if problems:
         return problems
+    # Aspect is irrelevant to the checks measure() makes here, so any positive
+    # square stands in: this is asking whether the points are coherent at all.
     try:
-        measure(points)
+        measure(to_isotropic(points, 1.0, 1.0))
     except ProportionError as exc:
         problems.append(str(exc))
     return problems
+
+
+def png_size(path: str) -> tuple[int, int]:
+    """Width and height from a PNG header, so marking does not need Pillow.
+
+    Raises for anything that is not a PNG rather than guessing, since a wrong
+    aspect silently biases every width measure.
+    """
+    with open(path, "rb") as fh:
+        head = fh.read(24)
+    if len(head) < 24 or head[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ProportionError(
+            f"{path} is not a PNG; pass image_size=[width, height] explicitly")
+    return int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")

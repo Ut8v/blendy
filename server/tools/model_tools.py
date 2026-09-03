@@ -142,29 +142,44 @@ def restore_model(model_id: str, label: str) -> dict[str, Any]:
     return {"restored": str(matches[-1])}
 
 
-def mark_reference(model_id: str, points: dict[str, list[float]]) -> dict[str, Any]:
+def mark_reference(model_id: str, points: dict[str, list[float]],
+                   image_size: list[int] | None = None) -> dict[str, Any]:
     """Record where the reference image's landmarks are, so the model can be
     measured against it.
 
     Look at the reference and give normalized coordinates: [0,0] is the top
-    left of the image, [1,1] the bottom right. Required: head_top, chin, eye,
-    shoulder_l, shoulder_r, ground. Optional and worth adding when the image
-    shows them clearly: hip, ear_l, ear_r, hand_l, hand_r, knee.
+    left of the image, [1,1] the bottom right. Required: head_top and chin,
+    which set the measuring unit. Add whichever of these the image actually
+    shows: eye, ear_l, ear_r, shoulder_l, shoulder_r, ground, hip, knee,
+    hand_l, hand_r. Mark only what you can see — a cropped reference yields
+    fewer measures, which is correct, whereas a guessed point yields a
+    confident wrong one.
 
     Mark shoulder_l/r where the arm meets the torso, NOT the outer edge of the
     silhouette: the model's own shoulder landmark is the joint, and marking the
     deltoid instead makes every model look too narrow. Left and right are the
     character's own, so shoulder_l is on the viewer's right.
 
-    Rejected if the points cannot be measured, e.g. a chin above the crown.
+    image_size is read from the PNG header when omitted. It matters: normalized
+    coordinates divide x by width and y by height, so widths and heights are
+    only comparable once the aspect ratio is divided back out.
     """
+    from compiler.proportions import png_size
+
     model = _load(model_id)
+    if image_size is None:
+        ref = model.get("reference")
+        if not ref:
+            raise ValueError(f"'{model_id}' has no reference image; pass image_size")
+        image_size = list(png_size(str(ROOT / ref)))
     model["reference_points"] = {k: list(v) for k, v in points.items()}
+    model["reference_size"] = [int(image_size[0]), int(image_size[1])]
     result = validate_model(model)
     if not result.ok:
         return {"ok": False, "errors": [i.as_dict() for i in result.issues if i.level == "error"]}
     _save(model)
     return {"ok": True, "points": model["reference_points"],
+            "image_size": model["reference_size"],
             "next": "compare_to_reference to see where the model disagrees"}
 
 
@@ -173,12 +188,14 @@ def compare_to_reference(model_id: str) -> dict[str, Any]:
 
     Every row is a scale-invariant ratio, so framing and size cannot confound
     it. 'strong' means fix that before anything else; 'ok' is inside the noise
-    of marking points by eye and is not worth a turn.
+    of marking points by eye and is not worth a turn. Measures the reference
+    cannot support, because it is cropped, are listed rather than guessed.
 
     Needs mark_reference first, and a built model (preview_model writes the
     profile this reads).
     """
-    from compiler.proportions import compare, measure, model_points, summarize
+    from compiler.proportions import (compare, measure, model_points,
+                                      summarize, to_isotropic)
 
     model = _load(model_id)
     marked = model.get("reference_points")
@@ -188,8 +205,12 @@ def compare_to_reference(model_id: str) -> dict[str, Any]:
     if not profile_path.exists():
         raise FileNotFoundError(f"model '{model_id}' is not built yet; preview_model first")
 
+    width, height = model.get("reference_size") or (1, 1)
+    ref_points = to_isotropic(marked, width, height)
     built = model_points(load_json(profile_path))
-    rows = compare(marked, built)
+    rows = compare(ref_points, built)
+    skipped = sorted(set(measure(built)) - {r["measure"] for r in rows})
     return {"model_id": model_id, "reference": model.get("reference"),
-            "rows": rows, "table": summarize(rows),
+            "rows": rows, "table": summarize(rows, skipped),
+            "unmeasurable_from_reference": skipped,
             "model_measures": measure(built)}

@@ -63,6 +63,17 @@ def validate_model(model: Any, strict: bool = False) -> ValidationResult:
 def _semantic(m: dict[str, Any]) -> list[Issue]:
     issues: list[Issue] = []
     add = issues.append
+
+    # Marked reference points, if any. The schema catches the shape; this
+    # catches a set that parses but cannot be measured, such as a chin marked
+    # above the crown, which would otherwise yield confident nonsense.
+    ref_points = m.get("reference_points")
+    if ref_points:
+        from compiler.proportions import validate_points
+        for problem in validate_points(ref_points):
+            add(Issue("error", "semantic", "bad_reference_point", problem,
+                      pointer(["reference_points"]), None))
+
     parts = m["parts"]
     by_id: dict[str, dict[str, Any]] = {}
     for i, p in enumerate(parts):

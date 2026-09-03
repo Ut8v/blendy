@@ -71,6 +71,19 @@
         "maxItems": 2
       }
     },
+    "reference_size": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "description": "Reference image pixel size [width, height]. Needed because normalized coordinates divide x by width and y by height, so a width and a height are only comparable once the aspect ratio is divided back out.",
+      "items": {
+        "type": "integer",
+        "exclusiveMinimum": 0
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
     "height": {
       "type": [
         "number",

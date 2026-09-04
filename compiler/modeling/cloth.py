@@ -48,6 +48,13 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
     shape, curve = p.get("shape", []), p.get("curve", [])
     slack = p.get("slack", 0.0)
     arc = math.radians(p.get("arc", 0.0))     # wrap the sheet round Z before it falls
+    # Cloth drapes because there is more fabric than the span it hangs from. A
+    # sheet cut exactly to its arc has nothing to fold into, so the solver
+    # settles it as a smooth shell and it reads as sheet metal. `gather` adds
+    # that surplus as a standing wave of `folds` pleats, deepening down the
+    # drop, which the solver then relaxes into real folds.
+    gather = float(p.get("gather", 0.0))
+    folds = max(1, int(p.get("folds", 7)))
     bm = bmesh.new()
     grid = []
     for j in range(nz + 1):
@@ -59,17 +66,23 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
             u = i / nx
             bow = (2.0 * u - 1.0) ** 2
             sag = slack * math.sin(math.pi * u) * math.sin(math.pi * t)
+            # Pleat depth grows down the drop and vanishes at the pinned edge,
+            # so the top stays where it is hung and the hem carries the folds.
+            pleat = (gather * (w * scale) * 0.5 * (t ** 1.3)
+                     * math.sin(folds * math.tau * u)) if gather > 0 else 0.0
             if arc > 1e-6:
                 # a cloak starts wrapped around the shoulders: lay the row on a circle
                 # a true arc centered on the part origin, so the sheet wraps the
                 # body instead of bulging away behind it
                 radius = (w * scale) / arc
                 a = (u - 0.5) * arc
-                x = radius * math.sin(a)
-                y = y0 + radius * math.cos(a) + bow * p.get("wrap", 0.0) + sag
+                # Pleats push in and out along the radius, which is the surface
+                # normal of the wrap; pushing along X would just stretch it flat.
+                x = (radius + pleat) * math.sin(a)
+                y = y0 + (radius + pleat) * math.cos(a) + bow * p.get("wrap", 0.0) + sag
             else:
                 x = (u - 0.5) * w * scale
-                y = y0 + bow * p.get("wrap", 0.0) + sag
+                y = y0 + pleat + bow * p.get("wrap", 0.0) + sag
             row.append(bm.verts.new((x, y, -t * h)))
         grid.append(row)
     for j in range(nz):

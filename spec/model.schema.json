@@ -1352,6 +1352,18 @@
           "minimum": 0,
           "maximum": 300,
           "description": "Degrees of wrap around Z before simulating. A cloak starts curved round the shoulders, not flat."
+        },
+        "gather": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1.5,
+          "description": "Surplus fabric beyond the span the sheet hangs from, as pleats the solver relaxes into folds. A sheet cut exactly to its arc has nothing to fold into and settles as a smooth shell."
+        },
+        "folds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 40,
+          "description": "How many pleats the gather is distributed into."
         }
       }
     }

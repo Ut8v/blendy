@@ -1084,6 +1084,17 @@
           "items": {
             "$ref": "#/$defs/shape_op"
           }
+        },
+        "points": {
+          "type": "object",
+          "description": "Extra named points published for `point:` landmark anchors, as name -> index into this part's own path. A limb's start is its inner root, which for an arm is inside the torso; naming the station at the joint lets a landmark sit where the joint actually is.",
+          "propertyNames": {
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
         }
       }
     },

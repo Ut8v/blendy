@@ -62,7 +62,14 @@ def build_loft(name: str, p: dict[str, Any], smooth: bool | None,
             push_radial(bm.verts, op["center"], op["radius"], op["strength"], op.get("axis", "z"))
     obj = bpy.data.objects.new(name, finish(name, bm, True if smooth is None else smooth))
     ends = [Vector(stations[0]["position"]), Vector(stations[-1]["position"])]
-    obj["blendy_points"] = {"start": list(ends[0]), "end": list(ends[1])}
+    published = {"start": list(ends[0]), "end": list(ends[1])}
+    # A limb's start is its inner root, which for an arm sits buried inside the
+    # torso. Anchoring a shoulder landmark there measures the wrong thing, so a
+    # recipe may name any station on its own path and anchor to that instead.
+    for point_name, index in (p.get("points") or {}).items():
+        station = p["path"][int(index)]
+        published[point_name] = list(station["position"])
+    obj["blendy_points"] = published
     return obj
 
 

@@ -30,6 +30,15 @@ POINT_NAMES = {
     "hair": {"root"},
 }
 _ANCHORS = {"center", "origin", "top", "bottom", "front", "back", "left", "right"}
+
+
+def points_for(part: dict[str, Any]) -> set[str]:
+    """Point names a part publishes: its builder's fixed set, plus any stations
+    a loft names for itself."""
+    have = set(POINT_NAMES.get(part.get("op"), set()))
+    if part.get("op") == "loft":
+        have |= set((part.get("params", {}).get("points") or {}).keys())
+    return have
 _HEAVY_OPS = {"metaball", "hair"}
 
 
@@ -75,6 +84,17 @@ def _semantic(m: dict[str, Any]) -> list[Issue]:
                       pointer(["reference_points"]), None))
 
     parts = m["parts"]
+    for i, p_ in enumerate(m["parts"]):
+        if p_.get("op") != "loft":
+            continue
+        path_len = len(p_.get("params", {}).get("path") or [])
+        for pname, index in (p_.get("params", {}).get("points") or {}).items():
+            if not 0 <= int(index) < path_len:
+                add(Issue("error", "semantic", "point_out_of_range",
+                          f"named point '{pname}' is station {index}, but this path has "
+                          f"{path_len} stations (0..{max(path_len - 1, 0)})",
+                          pointer(["parts", i, "params", "points", pname]), p_["id"]))
+
     by_id: dict[str, dict[str, Any]] = {}
     for i, p in enumerate(parts):
         if p["id"] in by_id:
@@ -114,7 +134,7 @@ def _semantic(m: dict[str, Any]) -> list[Issue]:
                           pointer(base + ["at"]), pid))
             else:
                 src = by_id.get(by_id[at["part"]].get("mirror_of") or "", by_id[at["part"]])
-                have = POINT_NAMES.get(src["op"], set())
+                have = points_for(src)
                 if at["point"] not in have:
                     add(Issue("error", "semantic", "unknown_point",
                               f"a {src['op']} part publishes no point '{at['point']}' "
@@ -162,7 +182,7 @@ def _semantic(m: dict[str, Any]) -> list[Issue]:
             elif lm["anchor"].startswith("point:"):
                 part = by_id[lm["part"]]
                 src = by_id.get(part.get("mirror_of") or "", part)
-                have = POINT_NAMES.get(src["op"], set())
+                have = points_for(src)
                 pname = lm["anchor"][6:]
                 if pname not in have:
                     add(Issue("error", "semantic", "unknown_point",

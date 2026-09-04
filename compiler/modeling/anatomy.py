@@ -299,19 +299,21 @@ def build_hand(name: str, p: dict[str, Any], smooth: bool | None,
     bm = bmesh.new()
 
     palm = [
-        {"position": Vector((0, 0, 0)), "size": [hw * 0.72, ht * 1.05], "roundness": 1.3},
-        {"position": Vector((0, 0, 0.10 * length)), "size": [hw * 0.86, ht * 1.10], "roundness": 1.4},
-        {"position": Vector((0, -0.01 * length, 0.28 * length)), "size": [hw, ht], "roundness": 1.5},
-        {"position": Vector((0, -0.02 * length, 0.42 * length)), "size": [hw * 0.98, ht * 0.86], "roundness": 1.5},
+        # Roundness near 1.5 is a rectangle in cross-section, which is most of
+        # why a hand reads as a paddle at any distance.
+        {"position": Vector((0, 0, 0)), "size": [hw * 0.72, ht * 1.05], "roundness": 1.20},
+        {"position": Vector((0, 0, 0.10 * length)), "size": [hw * 0.86, ht * 1.10], "roundness": 1.26},
+        {"position": Vector((0, -0.01 * length, 0.28 * length)), "size": [hw, ht], "roundness": 1.30},
+        {"position": Vector((0, -0.02 * length, 0.42 * length)), "size": [hw * 0.96, ht * 0.82], "roundness": 1.28},
     ]
     loft_rings(bm, resample(palm, 3), segments, True, True)
 
     knuckle = 0.42 * length
     finger_len = [0.40, 0.44, 0.41, 0.34]
     for i, fl in enumerate(finger_len):
-        fx = (i - 1.5) / 1.5 * hw * 0.78
+        fx = (i - 1.5) / 1.5 * hw * 0.88
         lean = -sx * (i - 1.5) / 1.5 * spread * length * 0.35
-        r = width * (0.105 if i in (1, 2) else 0.095)
+        r = width * (0.096 if i in (1, 2) else 0.086)
         bend = curl * fl * length
         path = [
             {"position": Vector((fx, -0.01 * length, knuckle)), "size": [r, r * 0.92], "roundness": 1.2},

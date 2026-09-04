@@ -48,6 +48,13 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
     shape, curve = p.get("shape", []), p.get("curve", [])
     slack = p.get("slack", 0.0)
     arc = math.radians(p.get("arc", 0.0))     # wrap the sheet round Z before it falls
+    # Cloth drapes because there is more fabric than the span it hangs from. A
+    # sheet cut exactly to its arc has nothing to fold into, so the solver
+    # settles it as a smooth shell and it reads as sheet metal. `gather` adds
+    # that surplus as a standing wave of `folds` pleats, deepening down the
+    # drop, which the solver then relaxes into real folds.
+    gather = float(p.get("gather", 0.0))
+    folds = max(1, int(p.get("folds", 7)))
     bm = bmesh.new()
     grid = []
     for j in range(nz + 1):
@@ -59,17 +66,23 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
             u = i / nx
             bow = (2.0 * u - 1.0) ** 2
             sag = slack * math.sin(math.pi * u) * math.sin(math.pi * t)
+            # Pleat depth grows down the drop and vanishes at the pinned edge,
+            # so the top stays where it is hung and the hem carries the folds.
+            pleat = (gather * (w * scale) * 0.5 * (t ** 1.3)
+                     * math.sin(folds * math.tau * u)) if gather > 0 else 0.0
             if arc > 1e-6:
                 # a cloak starts wrapped around the shoulders: lay the row on a circle
                 # a true arc centered on the part origin, so the sheet wraps the
                 # body instead of bulging away behind it
                 radius = (w * scale) / arc
                 a = (u - 0.5) * arc
-                x = radius * math.sin(a)
-                y = y0 + radius * math.cos(a) + bow * p.get("wrap", 0.0) + sag
+                # Pleats push in and out along the radius, which is the surface
+                # normal of the wrap; pushing along X would just stretch it flat.
+                x = (radius + pleat) * math.sin(a)
+                y = y0 + (radius + pleat) * math.cos(a) + bow * p.get("wrap", 0.0) + sag
             else:
                 x = (u - 0.5) * w * scale
-                y = y0 + bow * p.get("wrap", 0.0) + sag
+                y = y0 + pleat + bow * p.get("wrap", 0.0) + sag
             row.append(bm.verts.new((x, y, -t * h)))
         grid.append(row)
     for j in range(nz):
@@ -85,6 +98,22 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
 
 
 # --- hair -------------------------------------------------------------------------
+
+def _quantize(v: Vector, step: float) -> Vector:
+    """Snap a vector to a fixed grid.
+
+    Blender's evaluated geometry is not bit-identical between two builds of the
+    same recipe in one session; normals can differ in the seventh decimal. Any
+    arithmetic that subtracts (deriving a surface tangent, say) amplifies that
+    into visible strand differences, and the same seed stops producing the same
+    hair. This is the boundary between the evaluated mesh and a generator that
+    must be deterministic, so the noise is rounded off here rather than guarded
+    against everywhere downstream.
+    """
+    return Vector((round(v.x / step) * step,
+                   round(v.y / step) * step,
+                   round(v.z / step) * step))
+
 
 def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] | None,
                      rng: random.Random) -> list[tuple[Vector, Vector]]:
@@ -114,7 +143,16 @@ def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] |
                 continue          # keeps scalp hair off the face, beard off the scalp
             faces.append((poly.area, c.copy(), poly.normal.copy()))
         if not faces:
-            faces = [(p.area, p.center.copy(), p.normal.copy()) for p in mesh.polygons]
+            faces = [(f.area, f.center.copy(), f.normal.copy()) for f in mesh.polygons]
+        # Selection walks a running total of face areas until it passes a random
+        # draw. Areas carry the same sub-ULP noise as everything else the
+        # depsgraph evaluates, so a draw landing near a boundary picks a
+        # different face between two builds — and a flipped pick moves a strand
+        # to the other side of the head, not by a rounding error. Quantizing the
+        # areas fixes the boundaries; sorting fixes the order they accumulate in,
+        # since float addition is not associative.
+        faces = [(round(a / 1e-9) * 1e-9, c, n) for a, c, n in faces]
+        faces.sort(key=lambda f: (round(f[1].x, 6), round(f[1].y, 6), round(f[1].z, 6)))
         total = sum(f[0] for f in faces) or 1.0
         out = []
         for _ in range(count):
@@ -124,7 +162,8 @@ def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] |
                 acc += area
                 if acc >= r:
                     jitter = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))) * 0.004
-                    out.append((center + jitter, normal.normalized()))
+                    out.append((_quantize(center + jitter, 1e-6),
+                                _quantize(normal.normalized(), 1e-5)))
                     break
         return out
     finally:
@@ -148,44 +187,71 @@ def build_hair(name: str, p: dict[str, Any], smooth: bool | None,
     clump, gravity = p.get("clump", 0.4), p.get("gravity", 0.6)
     curl, sway = p.get("curl", 0.0), p.get("sway", 0.15)
     taper = p.get("taper", 0.25)
+    # How much strand lengths differ. Uniform length gives the whole mass a
+    # machine-cut hem, which is the loudest tell that hair is not hair.
+    length_var = float(p.get("length_var", 0.35))
+    # A small random turn per strand, so neighbours do not run parallel and
+    # read as ribbon. Applied once at the root and carried down the strand.
+    jitter = float(p.get("jitter", 0.12))
+    # How far the root direction lies along the surface rather than straight out
+    # of it. Hair grows from a follicle angled almost flat to the skin; leaving
+    # purely along the normal makes a scalp into a hedgehog, which thick strands
+    # hide and thin ones do not.
+    lay = float(p.get("lay", 0.75))
     bias = Vector(p.get("direction", (0, 0, 0)))
     avoid = [(Vector(a["center"]), float(a["radius"])) for a in p.get("avoid", [])]
     rng = random.Random(int(p.get("seed", 0)))
 
     seeds = _emitter_samples(emitter, count, p.get("region"), rng)
-    clusters = max(1, int(count * (1.0 - clump) / 4) + 1)
+    # Clusters must stay plural however hard the hair is clumped: at clump 0.95
+    # the old formula gave four clusters for 280 strands, which converges the
+    # whole beard onto four points and welds it into a slab.
+    clusters = max(6, int(count * (1.0 - clump) / 2) + 1)
     centers = [rng.choice(seeds)[0] if seeds else Vector() for _ in range(clusters)]
+    # Taper as a power curve rather than a straight line. Linear taper leaves
+    # the strand thick along its whole length and then pinches at the last
+    # ring, which is what reads as cut rope; a cone reads as hair.
+    shape = 0.35 + max(0.0, min(1.0, taper)) * 2.6
 
     bm = bmesh.new()
     for i, (origin, normal) in enumerate(seeds):
         target = centers[i % clusters]
-        strand_len = length * rng.uniform(0.75, 1.15)
+        strand_len = length * rng.uniform(max(0.1, 1.0 - length_var), 1.0 + length_var)
         r = radius * rng.uniform(0.8, 1.2)
         side = Vector((normal.y, -normal.x, 0.0))
         side = side.normalized() if side.length > 1e-6 else Vector((1, 0, 0))
         phase = rng.uniform(0, math.tau)
+        lean = Vector((rng.gauss(0, jitter), rng.gauss(0, jitter), rng.gauss(0, jitter)))
         path, pos = [], origin.copy()
         down = Vector((0, 0, -1))
+        # The way hair actually leaves the head: the pull direction flattened
+        # into the surface plane. On the crown this is the down-slope; on the
+        # jaw it is forward and down. Falls back to the normal where the two
+        # are parallel and there is no meaningful tangent.
+        flow = down * (0.6 + gravity) + bias
+        tangent = flow - normal * flow.dot(normal)
+        tangent = tangent.normalized() if tangent.length > 1e-6 else normal
+        root_dir = (normal * (1.0 - lay) + tangent * lay).normalized()
         for s in range(segments + 1):
             t = s / segments
             step = strand_len / segments
             # A strand leaves along the normal and is turned by gravity within the
             # first centimeters. Without this decay every strand sticks straight out.
             w = math.exp(-3.2 * max(0.15, gravity) * t)
-            heading = normal * w + down * (1.0 - w) * (0.6 + gravity) + bias * 0.6
+            heading = root_dir * w + down * (1.0 - w) * (0.6 + gravity) + bias * 0.6 + lean
             pull = (target - pos) * clump * 0.30 * t
             wobble = side * (math.sin(phase + t * math.pi * (1 + curl * 3)) * sway * strand_len * 0.18)
-            for center, radius in avoid:          # push the strand out of the face
-                away = pos - center
-                if away.length < radius:
-                    pos = center + (away.normalized() if away.length > 1e-6
-                                    else Vector((0, -1, 0))) * radius
+            for a_center, a_radius in avoid:      # push the strand out of the face
+                away = pos - a_center
+                if away.length < a_radius:
+                    pos = a_center + (away.normalized() if away.length > 1e-6
+                                      else Vector((0, -1, 0))) * a_radius
+            width = max(r * 0.02, r * (1.0 - t) ** shape)
             path.append({"position": pos.copy(),
-                         "size": [r * (1 - taper * t), r * (1 - taper * t)], "roundness": 1.0})
+                         "size": [width, width], "roundness": 1.0})
             heading = (heading + pull)
             heading = heading.normalized() if heading.length > 1e-9 else down
             pos = pos + heading * step + wobble * (1.0 / segments)
-        path[-1]["size"] = [r * 0.15, r * 0.15]
         loft_rings(bm, path, sides, cap_start=True, cap_end=True)
     obj = bpy.data.objects.new(name, finish(name, bm, True if smooth is None else smooth,
                                             remove_doubles=0.0))

@@ -32,7 +32,7 @@ export function mountModels(api, studio) {
     const shots = [...m.previews].sort((a, b) => ORDER.indexOf(a.view) - ORDER.indexOf(b.view));
     body.innerHTML = shots.length
       ? shots.map(p => `<figure class="${p.view === 'compare' ? 'wide' : ''}">
-           <img src="/files/${p.path}?t=${p.mtime}" data-full="/files/${p.path}" loading="lazy">
+           <img src="/files/${p.path}?t=${p.mtime}" data-full="/files/${p.path}">
            <figcaption>${esc(p.view)}</figcaption></figure>`).join('')
       : `<div class="empty">No turntable yet. Press <b>Build turntable</b>.${
            m.reference ? `<img src="/files/${m.reference}" style="height:150px;display:block;margin:12px auto 0;border-radius:6px">` : ''}</div>`;

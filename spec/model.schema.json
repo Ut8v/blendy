@@ -628,6 +628,24 @@
               }
             }
           }
+        },
+        "length_var": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.9,
+          "description": "How much strand lengths differ, as a fraction. Uniform length gives the mass a machine-cut hem, which is the loudest tell that hair is not hair."
+        },
+        "jitter": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.6,
+          "description": "Random turn applied per strand at the root, so neighbours do not run parallel and read as ribbon."
+        },
+        "lay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How far the root direction lies along the surface rather than straight out of it. Hair leaves a follicle nearly flat to the skin; 0 makes a scalp into a hedgehog."
         }
       }
     },

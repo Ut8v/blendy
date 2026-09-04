@@ -187,44 +187,71 @@ def build_hair(name: str, p: dict[str, Any], smooth: bool | None,
     clump, gravity = p.get("clump", 0.4), p.get("gravity", 0.6)
     curl, sway = p.get("curl", 0.0), p.get("sway", 0.15)
     taper = p.get("taper", 0.25)
+    # How much strand lengths differ. Uniform length gives the whole mass a
+    # machine-cut hem, which is the loudest tell that hair is not hair.
+    length_var = float(p.get("length_var", 0.35))
+    # A small random turn per strand, so neighbours do not run parallel and
+    # read as ribbon. Applied once at the root and carried down the strand.
+    jitter = float(p.get("jitter", 0.12))
+    # How far the root direction lies along the surface rather than straight out
+    # of it. Hair grows from a follicle angled almost flat to the skin; leaving
+    # purely along the normal makes a scalp into a hedgehog, which thick strands
+    # hide and thin ones do not.
+    lay = float(p.get("lay", 0.75))
     bias = Vector(p.get("direction", (0, 0, 0)))
     avoid = [(Vector(a["center"]), float(a["radius"])) for a in p.get("avoid", [])]
     rng = random.Random(int(p.get("seed", 0)))
 
     seeds = _emitter_samples(emitter, count, p.get("region"), rng)
-    clusters = max(1, int(count * (1.0 - clump) / 4) + 1)
+    # Clusters must stay plural however hard the hair is clumped: at clump 0.95
+    # the old formula gave four clusters for 280 strands, which converges the
+    # whole beard onto four points and welds it into a slab.
+    clusters = max(6, int(count * (1.0 - clump) / 2) + 1)
     centers = [rng.choice(seeds)[0] if seeds else Vector() for _ in range(clusters)]
+    # Taper as a power curve rather than a straight line. Linear taper leaves
+    # the strand thick along its whole length and then pinches at the last
+    # ring, which is what reads as cut rope; a cone reads as hair.
+    shape = 0.35 + max(0.0, min(1.0, taper)) * 2.6
 
     bm = bmesh.new()
     for i, (origin, normal) in enumerate(seeds):
         target = centers[i % clusters]
-        strand_len = length * rng.uniform(0.75, 1.15)
+        strand_len = length * rng.uniform(max(0.1, 1.0 - length_var), 1.0 + length_var)
         r = radius * rng.uniform(0.8, 1.2)
         side = Vector((normal.y, -normal.x, 0.0))
         side = side.normalized() if side.length > 1e-6 else Vector((1, 0, 0))
         phase = rng.uniform(0, math.tau)
+        lean = Vector((rng.gauss(0, jitter), rng.gauss(0, jitter), rng.gauss(0, jitter)))
         path, pos = [], origin.copy()
         down = Vector((0, 0, -1))
+        # The way hair actually leaves the head: the pull direction flattened
+        # into the surface plane. On the crown this is the down-slope; on the
+        # jaw it is forward and down. Falls back to the normal where the two
+        # are parallel and there is no meaningful tangent.
+        flow = down * (0.6 + gravity) + bias
+        tangent = flow - normal * flow.dot(normal)
+        tangent = tangent.normalized() if tangent.length > 1e-6 else normal
+        root_dir = (normal * (1.0 - lay) + tangent * lay).normalized()
         for s in range(segments + 1):
             t = s / segments
             step = strand_len / segments
             # A strand leaves along the normal and is turned by gravity within the
             # first centimeters. Without this decay every strand sticks straight out.
             w = math.exp(-3.2 * max(0.15, gravity) * t)
-            heading = normal * w + down * (1.0 - w) * (0.6 + gravity) + bias * 0.6
+            heading = root_dir * w + down * (1.0 - w) * (0.6 + gravity) + bias * 0.6 + lean
             pull = (target - pos) * clump * 0.30 * t
             wobble = side * (math.sin(phase + t * math.pi * (1 + curl * 3)) * sway * strand_len * 0.18)
-            for center, radius in avoid:          # push the strand out of the face
-                away = pos - center
-                if away.length < radius:
-                    pos = center + (away.normalized() if away.length > 1e-6
-                                    else Vector((0, -1, 0))) * radius
+            for a_center, a_radius in avoid:      # push the strand out of the face
+                away = pos - a_center
+                if away.length < a_radius:
+                    pos = a_center + (away.normalized() if away.length > 1e-6
+                                      else Vector((0, -1, 0))) * a_radius
+            width = max(r * 0.02, r * (1.0 - t) ** shape)
             path.append({"position": pos.copy(),
-                         "size": [r * (1 - taper * t), r * (1 - taper * t)], "roundness": 1.0})
+                         "size": [width, width], "roundness": 1.0})
             heading = (heading + pull)
             heading = heading.normalized() if heading.length > 1e-9 else down
             pos = pos + heading * step + wobble * (1.0 / segments)
-        path[-1]["size"] = [r * 0.15, r * 0.15]
         loft_rings(bm, path, sides, cap_start=True, cap_end=True)
     obj = bpy.data.objects.new(name, finish(name, bm, True if smooth is None else smooth,
                                             remove_doubles=0.0))

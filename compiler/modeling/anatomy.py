@@ -25,13 +25,21 @@ from .loft import finish, loft_rings, push, push_radial, resample
 # fractions of the head's half measurements. Front and back are independent
 # because that is the whole difference between a skull and an egg: the face
 # plane stays forward down to the chin while the cranium bulges backward.
+# (t, width, front depth, back depth, roundness), t=0 at the chin, t=1 the crown.
+#
+# Two things this has to get right, because both read instantly as wrong. The
+# widest point of a skull is the parietal, above and behind the eyes — putting
+# it at the eye line gives a face that bulges at the cheekbones and a cranium
+# that balloons above. And the jaw must hold its width down to the gonial angle
+# before turning in; a jaw that tapers straight off the cheekbone reads as a
+# chinless egg however good everything above it is.
 _SKULL = [
-    (0.00, 0.26, 0.52, 0.10, 1.10), (0.05, 0.46, 0.70, 0.30, 1.15),
-    (0.12, 0.66, 0.85, 0.52, 1.20), (0.22, 0.82, 0.94, 0.74, 1.25),
-    (0.33, 0.91, 0.99, 0.88, 1.25), (0.45, 0.97, 1.00, 0.96, 1.20),
-    (0.55, 1.00, 0.99, 1.02, 1.15), (0.66, 0.97, 0.95, 1.06, 1.10),
-    (0.76, 0.92, 0.89, 1.06, 1.05), (0.86, 0.80, 0.79, 1.00, 1.00),
-    (0.94, 0.60, 0.60, 0.84, 1.00), (1.00, 0.20, 0.28, 0.40, 1.00),
+    (0.00, 0.31, 0.55, 0.12, 1.18), (0.05, 0.57, 0.76, 0.38, 1.24),
+    (0.12, 0.76, 0.88, 0.62, 1.28), (0.22, 0.89, 0.95, 0.82, 1.30),
+    (0.33, 0.94, 0.99, 0.90, 1.26), (0.45, 0.96, 1.00, 0.97, 1.20),
+    (0.55, 0.98, 0.99, 1.03, 1.14), (0.66, 1.00, 0.94, 1.07, 1.08),
+    (0.76, 0.95, 0.88, 1.06, 1.04), (0.86, 0.78, 0.78, 0.99, 1.00),
+    (0.94, 0.55, 0.58, 0.82, 1.00), (1.00, 0.17, 0.26, 0.38, 1.00),
 ]
 
 
@@ -195,7 +203,13 @@ def _add_eyelids(bm, center, r: float, lids: float) -> None:
         grid.append(row)
     # Upper lid hoods the eye; the lower lid is a thinner rim beneath it. Both are
     # cut to the front arc so nothing pokes out of the side of the head.
-    bands = ((0.16 - 0.12 * lids, 1.30), (-0.95, -0.30 + 0.06 * lids))
+    #
+    # The gap between the two bands is the aperture, and it has to stay wide
+    # enough to read as an open eye. An earlier pairing left roughly 0.28 rad of
+    # a pi-tall sphere showing, about 9%, which renders as a face asleep. A
+    # comfortably open eye shows nearer a quarter of the eyeball, so `lids` now
+    # hoods the upper lid without ever closing the aperture outright.
+    bands = ((0.44 - 0.14 * lids, 1.30), (-0.95, -0.40 + 0.04 * lids))
     used = set()
     for i in range(rings):
         phi_a = -math.pi / 2 + math.pi * i / rings
@@ -244,12 +258,29 @@ def _add_ears(bm, size: float, h: float, w: float, hd: float, segments: int) -> 
     depth, tall, out = 0.015 * ear, 0.032 * ear, 0.016 * ear
     for sx in (1, -1):
         x = sx * w * 0.45
+        # An ear is not a slab on a stalk. It is a rim that swings back and down
+        # from the temple, widest and deepest at the top, tucking to a lobe.
+        # Five stations rather than three, each offset in Y and Z so the whole
+        # form rakes backwards the way a real ear sits against the skull, and a
+        # high roundness so the cross-section is an oval and not a rectangle.
         path = [
-            {"position": Vector((x, 0.04 * hd, 0.482 * h)), "size": [depth * 0.95, tall * 0.95], "roundness": 0.9},
-            {"position": Vector((x + sx * out * 0.55, 0.05 * hd, 0.487 * h)), "size": [depth, tall], "roundness": 0.9},
-            {"position": Vector((x + sx * out, 0.06 * hd, 0.478 * h)), "size": [depth * 0.5, tall * 0.72], "roundness": 0.9},
+            {"position": Vector((x, 0.02 * hd, 0.505 * h)),
+             "size": [depth * 0.70, tall * 0.72], "roundness": 1.45},
+            {"position": Vector((x + sx * out * 0.24, 0.055 * hd, 0.497 * h)),
+             "size": [depth * 1.02, tall * 0.86], "roundness": 1.55},
+            {"position": Vector((x + sx * out * 0.39, 0.085 * hd, 0.478 * h)),
+             "size": [depth * 1.00, tall * 0.82], "roundness": 1.6},
+            {"position": Vector((x + sx * out * 0.43, 0.095 * hd, 0.454 * h)),
+             "size": [depth * 0.74, tall * 0.64], "roundness": 1.5},
+            {"position": Vector((x + sx * out * 0.34, 0.080 * hd, 0.434 * h)),
+             "size": [depth * 0.40, tall * 0.32], "roundness": 1.3},
         ]
-        loft_rings(bm, resample(path, 2), max(10, segments // 2), cap_start=True, cap_end=True)
+        loft_rings(bm, resample(path, 3), max(12, segments // 2),
+                   cap_start=True, cap_end=True)
+        # The concha: a shallow bowl pressed into the outward face, which is what
+        # separates an ear from a lump. Pushed inward along the head's own X.
+        push(bm.verts, (x + sx * out * 0.36, 0.07 * hd, 0.478 * h),
+             0.018 * ear, (-sx, 0.35, 0), 0.010 * ear)
 
 
 # --- hand ---------------------------------------------------------------------------------

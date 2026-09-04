@@ -99,6 +99,22 @@ def build_sheet(name: str, p: dict[str, Any], smooth: bool | None,
 
 # --- hair -------------------------------------------------------------------------
 
+def _quantize(v: Vector, step: float) -> Vector:
+    """Snap a vector to a fixed grid.
+
+    Blender's evaluated geometry is not bit-identical between two builds of the
+    same recipe in one session; normals can differ in the seventh decimal. Any
+    arithmetic that subtracts (deriving a surface tangent, say) amplifies that
+    into visible strand differences, and the same seed stops producing the same
+    hair. This is the boundary between the evaluated mesh and a generator that
+    must be deterministic, so the noise is rounded off here rather than guarded
+    against everywhere downstream.
+    """
+    return Vector((round(v.x / step) * step,
+                   round(v.y / step) * step,
+                   round(v.z / step) * step))
+
+
 def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] | None,
                      rng: random.Random) -> list[tuple[Vector, Vector]]:
     """Area-weighted points on the emitter's surface, with their normals, in the
@@ -127,7 +143,16 @@ def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] |
                 continue          # keeps scalp hair off the face, beard off the scalp
             faces.append((poly.area, c.copy(), poly.normal.copy()))
         if not faces:
-            faces = [(p.area, p.center.copy(), p.normal.copy()) for p in mesh.polygons]
+            faces = [(f.area, f.center.copy(), f.normal.copy()) for f in mesh.polygons]
+        # Selection walks a running total of face areas until it passes a random
+        # draw. Areas carry the same sub-ULP noise as everything else the
+        # depsgraph evaluates, so a draw landing near a boundary picks a
+        # different face between two builds — and a flipped pick moves a strand
+        # to the other side of the head, not by a rounding error. Quantizing the
+        # areas fixes the boundaries; sorting fixes the order they accumulate in,
+        # since float addition is not associative.
+        faces = [(round(a / 1e-9) * 1e-9, c, n) for a, c, n in faces]
+        faces.sort(key=lambda f: (round(f[1].x, 6), round(f[1].y, 6), round(f[1].z, 6)))
         total = sum(f[0] for f in faces) or 1.0
         out = []
         for _ in range(count):
@@ -137,7 +162,8 @@ def _emitter_samples(obj: bpy.types.Object, count: int, region: dict[str, Any] |
                 acc += area
                 if acc >= r:
                     jitter = Vector((rng.uniform(-1, 1), rng.uniform(-1, 1), rng.uniform(-1, 1))) * 0.004
-                    out.append((center + jitter, normal.normalized()))
+                    out.append((_quantize(center + jitter, 1e-6),
+                                _quantize(normal.normalized(), 1e-5)))
                     break
         return out
     finally:

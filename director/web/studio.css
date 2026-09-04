@@ -173,9 +173,20 @@ main { flex: 1; display: grid; grid-template-columns: 384px minmax(0, 1fr) 320px
 .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid-auto { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); }
 .grid-auto-lg { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-figure { margin: 0; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--card-bg); }
-figure.wide { grid-column: 1 / -1; }
-figure img { width: 100%; display: block; cursor: zoom-in; }
+/* A fixed aspect box with object-fit, rather than letting the image set the
+   row height. Lazy images have no intrinsic size when the grid first measures,
+   so the row settled short and clipped every render to its top slice — which
+   for a standing figure is the empty background above the head. */
+figure {
+  margin: 0; border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; background: var(--card-bg);
+  display: flex; flex-direction: column; aspect-ratio: 4 / 5;
+}
+figure.wide { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+figure img {
+  width: 100%; flex: 1; min-height: 0; object-fit: contain;
+  display: block; cursor: zoom-in;
+}
 figcaption { padding: 6px 9px; font: 400 11px var(--mono); color: var(--dim); border-top: 1px solid var(--line); }
 .group-label { margin: 18px 0 10px; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--dim); }
 .empty {
